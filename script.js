@@ -870,9 +870,6 @@ function updateItemLayout()
             {
                 itemQuantityInput.trigger("select");
             });
-            // TESTING
-            quantityLabel.style.webkitTextStrokeColor = "brown";
-            quantityLabel.style.webkitTextStrokeWidth = "4px";
 
             const priceLabel = document.createElement("p");
             priceLabel.innerHTML = formatItemPriceLabel(currItem.priceOrMultiplier); // using innerHTML so that coin image is shown
