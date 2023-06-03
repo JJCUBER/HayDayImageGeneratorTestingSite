@@ -851,7 +851,7 @@ function updateItemLayout()
 
             const image = document.createElement("img");
             image.src = currItem.url;
-            image.className = "itemImage";
+            image.classList.add("itemImage");
             $(image).on("click", () =>
             {
                 itemNameInput.trigger("select");
@@ -865,7 +865,7 @@ function updateItemLayout()
 
             const quantityLabel = document.createElement("p");
             quantityLabel.innerText = currItem.quantity;
-            quantityLabel.className = "quantityLabel";
+            quantityLabel.classList.add("label", "quantityLabel");
             $(quantityLabel).on("click", () =>
             {
                 itemQuantityInput.trigger("select");
@@ -873,7 +873,7 @@ function updateItemLayout()
 
             const priceLabel = document.createElement("p");
             priceLabel.innerHTML = formatItemPriceLabel(currItem.priceOrMultiplier); // using innerHTML so that coin image is shown
-            priceLabel.className = "priceLabel";
+            priceLabel.classList.add("label", "priceLabel");
             $(priceLabel).on("click", () =>
             {
                 itemPriceOrMultiplierInput.trigger("select");
@@ -886,7 +886,7 @@ function updateItemLayout()
                 {
                     customQuantityLabel = document.createElement("p");
                     customQuantityLabel.innerText = currItem.customQuantity;
-                    customQuantityLabel.className = "customQuantityLabel";
+                    customQuantityLabel.classList.add("label",  "customLabel", "customQuantityLabel");
                     customQuantityLabel.hidden =  !currItem.isSelected;
                     $(customQuantityLabel).on("click", () =>
                     {
@@ -898,7 +898,7 @@ function updateItemLayout()
                 {
                     customPriceLabel = document.createElement("p");
                     customPriceLabel.innerHTML = formatItemPriceLabel(currItem.customPriceOrMultiplier); // using innerHTML so that coin image is shown
-                    customPriceLabel.className = "customPriceLabel";
+                    customPriceLabel.classList.add("label", "customLabel", "customPriceLabel");
                     customPriceLabel.hidden =  !currItem.isSelected;
                     $(customPriceLabel).on("click", () =>
                     {
@@ -1179,12 +1179,13 @@ function setSelectedState(item, cell, isSelected)
 {
     item.isSelected = isSelected;
 
+    // TODO -- classList.toggle() is a thing, maybe use this instead of the if/else?  toggle can either toggle based on whether the class is on the element or based on whether the second parameter passed is true.  https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/toggle
     if(isSelected)
         cell.classList.add("selected");
     else
         cell.classList.remove("selected");
 
-    $(cell).find(".customQuantityLabel,.customPriceLabel").prop("hidden", !isSelected);
+    $(cell).find(".customLabel").prop("hidden", !isSelected);
 }
 
 function setSelectedStateAll(items, cells, isSelected)
@@ -1199,7 +1200,7 @@ function setSelectedStateAll(items, cells, isSelected)
         else
             cell.classList.remove("selected");
 
-        $(cell).find(".customQuantityLabel,.customPriceLabel").prop("hidden", !isSelected);
+        $(cell).find(".customLabel").prop("hidden", !isSelected);
     }
 }
 
@@ -1476,6 +1477,16 @@ function saveItemsToLocalStorage()
 
 /* -------- scripts/Changelog.js -------- */
 const changelog = new Map([
+    ["v2.3.1", `Bug Fixes:
+- Fixed images not properly loading in screenshot for iOS devices (this might be an issue for Macs as well when using safari, but I have no way of testing it; let me know if you run into this issue)
+- Fixed outlines not showing in screenshot for iOS devices
+
+UI Changes:
+- Changed the color and outlines of price/multiplier and quantity labels (they should be more readable now)
+- Made the list of matches fade in when there previously weren't any/when the input is focused (it fades in only when going from a state of being empty -> non-empty)
+
+Misc:
+- Cleaned up and organized css`],
     ["v2.3", `Features:
 - Added toggle to hide unselected items (when in price calculation mode)
 - Added a (green) notification when something got successfully copied (image/text of item list), coupled with a nice animation (more about the animation in UI Changes)
