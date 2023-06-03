@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Hay Day Image Generator</title>
+
+        <!-- Using the unminified version since it might help me debug any issues; might want to eventually use https://code.jquery.com/jquery-3.6.4.min.js -->
+        <!-- Got the integrity sha/hash using https://www.srihash.org/ (found out about it here: https://stackoverflow.com/questions/51254596/how-to-get-the-integrity-value-for-a-jquery-version-for-script ); I decided to stick with the sha384 it defaults to.  I'm unsure whether to append the attribute: referrerpolicy="no-referrer" -->
+        <script src="https://code.jquery.com/jquery-3.6.4.js" integrity="sha384-SCPawFAkxFucxzK6X4Gpg3lmBZqjjmM8ghZCRH8hW4C+k4wCVXFd862J1juShkQ7" crossorigin="anonymous"></script>
+        <!-- Useful for finding which deprecated functions I'm using ( https://github.com/jquery/jquery-migrate/ )-->
+        <!-- <script src="https://code.jquery.com/jquery-migrate-3.1.0.js"></script> -->
+
+        <!-- Using the unminified version of math js; this is mainly for processing equations in the quantity input field, since I want to avoid using eval() [it also processes code, not just equations].  More info here: https://mathjs.org/download.html and https://cdnjs.com/libraries/mathjs -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.js" integrity="sha512-jVMFsAksn8aljb9IJ+3OCAq38dJpquMBjgEuz7Q5Oqu5xenfin/jxdbKw4P5eKjUF4xiG/GPT5CvCX3Io54gyA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.js" integrity="sha512-zPMZ/3MBK+R1rv6KcBFcf7rGwLnKS+xtB2OnWkAxgC6anqxlDhl/wMWtDbiYI4rgi/NrCJdXrmNGB8pIq+slJQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuzzysort/2.0.4/fuzzysort.js" integrity="sha512-sdAWRZSPnL/EbXixTyBhffFggsxlPrxEMLKvseTBMfY3MGxYvXvm83S/WddNpx1tXPylK5warEPp7uu1yiNsgA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+        <link rel="stylesheet" href="style.css?v=2.3">
+
+
+        <script src="script.js?v=2.3"></script>
+    </head>
+    <body>
+        <h2>Options</h2>
+
+        <label for="itemsPerRowSlider">Items Per Row</label>
+        <input type="range" min="1" max="12" id="itemsPerRowSlider" style="vertical-align: sub;"> <!-- seems to align slightly better than "vertical-align: middle" -->
+        <label id="itemsPerRowLabel">8</label>
+
+        <button id="settingsButton" style="margin-left: 20px;">Settings</button>
+        <button id="changelogButton">Changelog</button>
+
+        <div style="height: 20px;"></div>
+        <hr>
+
+        <h2>
+            Add/Modify Item
+            <small><small>(Press enter inside any textbox to submit pending item changes)</small></small>
+        </h2>
+
+        <!-- Label MUST be outside of the div for the dimensions of the autocomplete/fuzzy match options to be proper -->
+        <label for="itemNameInput">Name</label>
+        <!-- this div needs to have position be relative in order for 100% width of the inner div to not cover the whole document ( https://stackoverflow.com/questions/6625116/css-position-absolute-and-full-width-problem ) -->
+        <div style="display: inline-block; position: relative;">
+            <input type="text" id="itemNameInput">
+            <div id="fuzzyMatchesHolder"></div>
+        </div>
+
+        <label for="itemQuantityInput">Quantity</label>
+        <input type="text" id="itemQuantityInput" value=1>
+
+        <label for="itemPriceOrMultiplierInput">Price/Multiplier</label>
+        <input type="text" id="itemPriceOrMultiplierInput" value="5x">
+
+        <br>
+        <div style="height: 10px;"></div>
+
+        <button id="clearAllButton" class="disableInPriceCalculationMode">Clear All</button>
+        <button id="copyImageToClipboardButton">Copy Image to Clipboard</button>
+        <button id="copyAsTextListButton">Copy as Text List</button>
+        <div id="copyImageLoadingWheel" class="loading" hidden></div>
+        <br>
+        <div style="height: 10px;"></div>
+        <button id="priceCalculationToggleButton"><span id="priceCalculationModeStateSpan">Enable</span> Price Calculation Mode</button>
+        <button id="selectAllButton" class="disableOutsidePriceCalculationMode">Select All</button>
+        <button id="clearSelectionButton" class="disableOutsidePriceCalculationMode">Clear Selection</button>
+        <button id="subtractSelectedQuantitiesButton" class="disableOutsidePriceCalculationMode">Subtract Selected Quantities</button>
+        <button id="deleteSelectedButton" class="disableOutsidePriceCalculationMode">Delete Selected</button>
+        <br>
+        <div style="height: 10px;"></div>
+        <button id="resetCustomValuesButton" class="disableOutsidePriceCalculationMode">Reset Custom Values</button>
+        <button id="equationVisibilityToggleButton" class="disableOutsidePriceCalculationMode"><span id="equationVisibilityStateSpan">Show</span> Equation</button>
+        <button id="unselectedItemsVisibilityToggleButton" class="disableOutsidePriceCalculationMode"><span id="unselectedItemsVisibilityStateSpan">Hide</span> Unselected</button>
+
+        <div style="height: 15px;"></div>
+        <hr>
+        <div id="totalPriceArea" hidden>
+            <h2>Total Selected Price</h2>
+            <p id="totalPriceHolder"></p>
+            <p id="totalPriceEquationHolder" hidden></p>
+            <p id="totalPriceMessageHolder" hidden></p>
+            <hr>
+        </div>
+        <small>You can click on any item's image, quantity, or price to autofill all their information and focus the corresponding text box!  (This includes the bottom text.)</small>
+        <br>
+        <small id="priceCalculationModeSelectionInfo" hidden>Click = individual toggle, Shift+Click = range additive, Alt+Click = range subtractive, Ctrl+Click = range toggle (invert)</small>
+        <div style="height: 20px;"></div>
+
+        <div id="screenshotRegion">
+            <table id="itemTable"></table>
+
+            <p id="bottomText"></p>
+        </div>
+
+        <div id="settingsOverlay" class="overlay" hidden>
+            <div id="settingsBackground" class="overlayBackground"></div>
+            <div id="settingsBox" class="overlayBox">
+                <button id="hideSettingsButton" class="overlayHideButton">X</button>
+                <div id="settingsInner" class="overlayInner">
+                    <!-- <div style="height: 10px;"></div> -->
+                    <h2>
+                        Item Abbreviations
+                        <br>
+                        <small><small>(case-insensitive)</small></small>
+                    </h2>
+                    <div id="abbreviationMappingTableArea">
+                        <table id="abbreviationMappingTable">
+                            <tr>
+                                <th>Abbreviation</th>
+                                <th>Expand To</th>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <hr>
+
+                    <h2>Bottom Text</h2>
+                    <textarea id="bottomTextSettingInput" rows="3" cols="45"></textarea>
+
+                    <hr>
+
+                    <h2>Text List Separator</h2>
+                    <input type="radio" name="textListSeparatorGroup" id="textListSeparatorNewlineRadio" value="&NewLine;">
+                    <label for="textListSeparatorNewlineRadio">Newline</label>
+                    <input type="radio" name="textListSeparatorGroup" id="textListSeparatorCommaRadio" value=", ">
+                    <label for="textListSeparatorCommaRadio">Comma</label>
+                    <input type="radio" name="textListSeparatorGroup" id="textListSeparatorCustomRadio">
+                    <label for="textListSeparatorCustomRadio">Custom</label>
+
+                    <input type="text" id="textListCustomSeparatorInput" style="width: 40px;" value="">
+
+                    <hr>
+
+                    <h2>
+                        Text List Format
+                        <br>
+                        <small><small>variables: {{name}}, {{quantity}}, {{price}}</small></small>
+                    </h2>
+                    <textarea id="textListFormatInput" rows="3" cols="45"></textarea>
+
+                    <hr>
+
+                    <h2>Item for Price Calculation</h2>
+                    <input type="text" id="priceCalculationItemInput">
+                </div>
+            </div>
+        </div>
+
+        <div id="changelogOverlay" class="overlay" hidden>
+            <div id="changelogBackground" class="overlayBackground"></div>
+            <div id="changelogBox" class="overlayBox">
+                <button id="hideChangelogButton" class="overlayHideButton">X</button>
+                <div id="changelogInner" class="overlayInner"></div>
+            </div>
+        </div>
+
+        <div id="failedCopyOverlay" class="overlay" hidden>
+            <div id="failedCopyBackground" class="overlayBackground"></div>
+            <div id="failedCopyBox" class="overlayBox">
+                <button id="hideFailedCopyButton" class="overlayHideButton">X</button>
+                <div id="failedCopyInner" class="overlayInner">
+                    <h2>Copy Failed</h2>
+
+                    <!-- TODO -- need to make this look better... it's disgusting rn -->
+                    <p>
+                        It looks like there was an issue with copying the image to the clipboard.
+                        <br>
+                        This is usually due to:
+                        <br>
+                        1) clicking out of the site while the image is being copied, or 2) using a mobile device.
+                        <br>
+                        Below is the image that was generated (right click/long-press the image to copy/save it)
+                    </p>
+
+                    <hr>
+
+                    <img id="failedCopyImageHolder">
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
