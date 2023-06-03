@@ -63,7 +63,7 @@ button + button
     color: white;
 
     -webkit-text-stroke: 2px black;
-    /* transition: -webkit-text-stroke 0.2s; */
+    transition: -webkit-text-stroke 0.2s;
 }
 .quantityLabel:hover, .customQuantityLabel:hover
 {
@@ -80,7 +80,7 @@ button + button
     color: white;
 
     -webkit-text-stroke: 2px red;
-    /* transition: -webkit-text-stroke 0.2s; */
+    transition: -webkit-text-stroke 0.2s;
 }
 
 .priceLabel
@@ -114,7 +114,7 @@ button + button
     font-weight: bold;
     color: yellow;
     -webkit-text-stroke: 2px red;
-    /* transition: -webkit-text-stroke 0.2s; */
+    transition: -webkit-text-stroke 0.2s;
     --coin-stroke-color: #0004;
 }
 

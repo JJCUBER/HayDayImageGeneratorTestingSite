@@ -15,10 +15,10 @@ function convertToTitleSnakeCase(phrase)
 }
 
 // gotten from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios
+const iOSPlatformList = ['iPad Simulator', 'iPhone Simulator', 'iPod Simulator', 'iPad', 'iPhone', 'iPod'];
 function isRunningIOS()
 {
-    return ['iPad Simulator', 'iPhone Simulator', 'iPod Simulator', 'iPad', 'iPhone', 'iPod']
-        .includes(navigator.platform) ||
+    return iOSPlatformList.includes(navigator.platform) ||
         // iPad on iOS 13 detection
         (navigator.userAgent.includes("Mac") && "ontouchend" in document);
 }
@@ -870,6 +870,9 @@ function updateItemLayout()
             {
                 itemQuantityInput.trigger("select");
             });
+            // TESTING
+            quantityLabel.style.webkitTextStrokeColor = "brown";
+            quantityLabel.style.webkitTextStrokeWidth = "4px";
 
             const priceLabel = document.createElement("p");
             priceLabel.innerHTML = formatItemPriceLabel(currItem.priceOrMultiplier); // using innerHTML so that coin image is shown
@@ -956,11 +959,8 @@ function copyImageToClipboard()
     htmlToImage.toBlob(screenshotRegion[0])
         .then(async (blob) =>
         {
-            // TEMP just to know what's happening on mobile
-            if(isRunningIOS())
-                createSuccessfulCopyNotification();
-
-            // need to run a second time on iOS
+            // TODO -- it sounds like this might also happen with safari on mac occasionally?  I might might also want to check for the browser being safari.
+            // need to run a second time on iOS (it sounds like just returning the .toBlob call and .then()'ing it doesn't work based on https://github.com/bubkoo/html-to-image/issues/52#issuecomment-1255708420 , so that's why I'm awaiting it here [I don't think that would really be all so different from just returning and calling .then, but I will just do it like this since it seems to work])
             return isRunningIOS() ? await htmlToImage.toBlob(screenshotRegion[0]) : blob;
         })
         .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
