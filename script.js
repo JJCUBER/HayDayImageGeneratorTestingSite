@@ -14,6 +14,15 @@ function convertToTitleSnakeCase(phrase)
     return titleCaseWords.join("_");
 }
 
+// gotten from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios
+function isRunningIOS()
+{
+    return ['iPad Simulator', 'iPhone Simulator', 'iPod Simulator', 'iPad', 'iPhone', 'iPod']
+        .includes(navigator.platform) ||
+        // iPad on iOS 13 detection
+        (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+}
+
 
 /* -------- scripts/Globals.js -------- */
 let itemsPerRow = 8;
@@ -945,6 +954,15 @@ function copyImageToClipboard()
 
     let screenshotBlob;
     htmlToImage.toBlob(screenshotRegion[0])
+        .then(async (blob) =>
+        {
+            // TEMP just to know what's happening on mobile
+            if(isRunningIOS())
+                createSuccessfulCopyNotification();
+
+            // need to run a second time on iOS
+            return isRunningIOS() ? await htmlToImage.toBlob(screenshotRegion[0]) : blob;
+        })
         .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
         .then(clipboardItem => navigator.clipboard.write([clipboardItem]))
         .then(createSuccessfulCopyNotification)
