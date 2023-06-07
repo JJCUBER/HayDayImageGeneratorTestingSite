@@ -139,7 +139,7 @@ td.selected:hover
          0px  1px  0px var(--labelOutlineColor),
         -1px  1px  0px var(--labelOutlineColor),
         -1px  0px  0px var(--labelOutlineColor);
-    transition: text-shadow 0.2s;
+    /* transition: text-shadow 0.2s; */
 }
 .label:hover
 {

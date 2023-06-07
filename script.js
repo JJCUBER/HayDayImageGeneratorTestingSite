@@ -976,11 +976,7 @@ function copyImageToClipboard()
                 const second = await htmlToImage.toBlob(screenshotRegion[0]);
                 if(!first !== second || screenshotBlob !== first)
                     createSuccessfulCopyNotification();
-
-                htmlToImage.toCanvas(screenshotRegion[0])
-                  .then(function (canvas) {
-                    document.body.appendChild(canvas);
-                  });
+                $(".label")[0].style.textShadow("0px  0px 10px #f00f);");
             }
 
             return isRunningIOS() ? await htmlToImage.toBlob(screenshotRegion[0]) : blob;
