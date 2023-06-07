@@ -125,32 +125,43 @@ td.selected:hover
 
     color: white;
 
-    --labelOutlineColor: black; /* default */
+    /* --labelOutlineColor: black; /1* default *1/ */
+    --labelOutlineColor: 0, 0, 0; /* default */
     /* text-shadow: */
-    /* shadow */
-         /* 0px  0px 10px var(--labelOutlineColor), */
+    /* /1* shadow *1/ */
+    /*      0px  0px 10px var(--labelOutlineColor), */
 
-    /* outline */
-        /* -1px -1px  0px var(--labelOutlineColor), */
-        /*  0px -1px  0px var(--labelOutlineColor), */
-        /*  1px -1px  0px var(--labelOutlineColor), */
-        /*  1px  0px  0px var(--labelOutlineColor), */
-        /*  1px  1px  0px var(--labelOutlineColor), */
-        /*  0px  1px  0px var(--labelOutlineColor), */
-        /* -1px  1px  0px var(--labelOutlineColor), */
-        /* -1px  0px  0px var(--labelOutlineColor); */
+    /* /1* outline *1/ */
+    /*     -1px -1px  0px var(--labelOutlineColor), */
+    /*      0px -1px  0px var(--labelOutlineColor), */
+    /*      1px -1px  0px var(--labelOutlineColor), */
+    /*      1px  0px  0px var(--labelOutlineColor), */
+    /*      1px  1px  0px var(--labelOutlineColor), */
+    /*      0px  1px  0px var(--labelOutlineColor), */
+    /*     -1px  1px  0px var(--labelOutlineColor), */
+    /*     -1px  0px  0px var(--labelOutlineColor); */
     /* transition: text-shadow 0.2s; */
 
-    filter: drop-shadow(0 0 0.75rem black);
-    font-style: italic;
+    /* filter: drop-shadow(0 0 0.75rem black); */
+    /* filter: drop-shadow(0 0 2px black) drop-shadow(0 0 2px black) drop-shadow(0 0 20px black); */
+    /* filter: drop-shadow(0 0 1px black) drop-shadow(0 0 1px black) drop-shadow(0 0 10px black); */
+    /* filter: drop-shadow(0 0 1px black) drop-shadow(0 0 1px black) drop-shadow(0 0 5px #000a); */
+    /* IMPORTANT -- MUST use rgb comma list for the variable when specifying colors, not color names! */
+    /* filter: drop-shadow(0 0 1px var(--labelOutlineColor)) drop-shadow(0 0 1px var(--labelOutlineColor)) drop-shadow(0 0 5px var(--labelOutlineColor)); */
+    filter: drop-shadow(0 0 1px rgb(var(--labelOutlineColor), 0.8)) drop-shadow(0 0 1px rgb(var(--labelOutlineColor), 0.8)) drop-shadow(0 0 5px rgb(var(--labelOutlineColor), 0.8));
+    transition: filter 0.2s;
 }
 .label:hover
 {
-    --labelOutlineColor: orange;
+    /* --labelOutlineColor: orange; */
+    /* --labelOutlineColor: #ffa500; */
+    --labelOutlineColor: 255 165, 0;
 }
 .customLabel
 {
-    --labelOutlineColor: red;
+    /* --labelOutlineColor: red; */
+    /* --labelOutlineColor: #f00; */
+    --labelOutlineColor: 255, 0, 0;
 }
 
 .quantityLabel
@@ -167,7 +178,9 @@ td.selected:hover
 
     font-size: 25px;
 
-    --labelOutlineColor: red;
+    /* --labelOutlineColor: red; */
+    /* --labelOutlineColor: #f00; */
+    --labelOutlineColor: 255, 0, 0;
 }
 
 .priceLabel
@@ -178,7 +191,7 @@ td.selected:hover
 
     font-size: 30px;
 
-    --coin-stroke-color: #4444;
+    /* --coin-stroke-color: #4444; */
 }
 .customPriceLabel
 {
@@ -189,11 +202,11 @@ td.selected:hover
     font-size: 25px;
     /* I don't know why I used to have this yellow, but if I decide to uncomment this again, the custom quantity label should also have this (which means I should apply this to .customLabel)
     /* color: yellow; */
-    --coin-stroke-color: #0004;
+    /* --coin-stroke-color: #0004; */
 }
 :is(.priceLabel, .customPriceLabel):hover
 {
-    --coin-stroke-color: #ffa50044;
+    /* --coin-stroke-color: #ffa50044; */
 }
 
 .coin
@@ -210,16 +223,16 @@ td.selected:hover
     --stroke-pos: 1px;
     --stroke-neg: -1px;
     /* --coin-stroke-color is set in priceLabel-related classes to handle hovering changing the outline */
-    filter:
-        drop-shadow(var(--stroke-pos) 0 0 var(--coin-stroke-color))
-        drop-shadow(var(--stroke-neg) 0 var(--coin-stroke-color))
-        drop-shadow(0 var(--stroke-pos) 0 var(--coin-stroke-color))
-        drop-shadow(0 var(--stroke-neg) 0 var(--coin-stroke-color))
-        drop-shadow(var(--stroke-pos) var(--stroke-pos) 0 var(--coin-stroke-color))
-        drop-shadow(var(--stroke-pos) var(--stroke-neg) 0 var(--coin-stroke-color))
-        drop-shadow(var(--stroke-neg) var(--stroke-pos) 0 var(--coin-stroke-color))
-        drop-shadow(var(--stroke-neg) var(--stroke-neg) 0 var(--coin-stroke-color));
-    transition: filter 0.2s;
+    /* filter: */
+    /*     drop-shadow(var(--stroke-pos) 0 0 var(--coin-stroke-color)) */
+    /*     drop-shadow(var(--stroke-neg) 0 var(--coin-stroke-color)) */
+    /*     drop-shadow(0 var(--stroke-pos) 0 var(--coin-stroke-color)) */
+    /*     drop-shadow(0 var(--stroke-neg) 0 var(--coin-stroke-color)) */
+    /*     drop-shadow(var(--stroke-pos) var(--stroke-pos) 0 var(--coin-stroke-color)) */
+    /*     drop-shadow(var(--stroke-pos) var(--stroke-neg) 0 var(--coin-stroke-color)) */
+    /*     drop-shadow(var(--stroke-neg) var(--stroke-pos) 0 var(--coin-stroke-color)) */
+    /*     drop-shadow(var(--stroke-neg) var(--stroke-neg) 0 var(--coin-stroke-color)); */
+    /* transition: filter 0.2s; */
 }
 
 #screenshotRegion
