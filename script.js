@@ -970,13 +970,13 @@ function copyImageToClipboard()
             // need to run a second time on iOS (it sounds like just returning the .toBlob call and .then()'ing it doesn't work based on https://github.com/bubkoo/html-to-image/issues/52#issuecomment-1255708420 , so that's why I'm awaiting it here [I don't think that would really be all so different from just returning and calling .then, but I will just do it like this since it seems to work])
 
             // TEMP TEST
-            if(isRunningIOS())
+            // if(isRunningIOS())
             {
                 const first = await htmlToImage.toBlob(screenshotRegion[0]);
                 const second = await htmlToImage.toBlob(screenshotRegion[0]);
-                if(!first !== second || screenshotBlob !== first)
-                    createSuccessfulCopyNotification();
-                $(".label")[0].style.textShadow("0px  0px 10px #f00f);");
+                // if(!first !== second || screenshotBlob !== first)
+                    // createSuccessfulCopyNotification();
+                $(".label").css("text-shadow", "0px  0px 10px #f00f");
             }
 
             return isRunningIOS() ? await htmlToImage.toBlob(screenshotRegion[0]) : blob;
