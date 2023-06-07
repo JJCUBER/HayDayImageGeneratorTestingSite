@@ -968,23 +968,6 @@ function copyImageToClipboard()
         {
             // TODO -- it sounds like this might also happen with safari on mac occasionally?  I might might also want to check for the browser being safari.
             // need to run a second time on iOS (it sounds like just returning the .toBlob call and .then()'ing it doesn't work based on https://github.com/bubkoo/html-to-image/issues/52#issuecomment-1255708420 , so that's why I'm awaiting it here [I don't think that would really be all so different from just returning and calling .then, but I will just do it like this since it seems to work])
-
-            // TEMP TEST
-            // if(isRunningIOS())
-            {
-                const first = await htmlToImage.toBlob(screenshotRegion[0]);
-                const second = await htmlToImage.toBlob(screenshotRegion[0]);
-                // if(!first !== second || screenshotBlob !== first)
-                    // createSuccessfulCopyNotification();
-                // $(".label").css("text-shadow", "0px  0px 10px #f00f");
-                // htmlToImage.toCanvas(screenshotRegion[0], {style: {textShadow: "0px  0px 10px #f00f", boxShadow: "0px  0px 10px #00ff"}})
-                // htmlToImage.toCanvas(screenshotRegion[0], {style: {style: {textShadow: "0px  0px 10px #f00f", boxShadow: "0px  0px 10px #00ff"}}})
-                //     .then(canvas =>
-                //     {
-                //         document.body.appendChild(canvas);
-                //     });
-            }
-
             return isRunningIOS() ? await htmlToImage.toBlob(screenshotRegion[0]) : blob;
         })
         .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
