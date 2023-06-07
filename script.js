@@ -976,7 +976,13 @@ function copyImageToClipboard()
                 const second = await htmlToImage.toBlob(screenshotRegion[0]);
                 // if(!first !== second || screenshotBlob !== first)
                     // createSuccessfulCopyNotification();
-                $(".label").css("text-shadow", "0px  0px 10px #f00f");
+                // $(".label").css("text-shadow", "0px  0px 10px #f00f");
+                // htmlToImage.toCanvas(screenshotRegion[0], {style: {textShadow: "0px  0px 10px #f00f", boxShadow: "0px  0px 10px #00ff"}})
+                // htmlToImage.toCanvas(screenshotRegion[0], {style: {style: {textShadow: "0px  0px 10px #f00f", boxShadow: "0px  0px 10px #00ff"}}})
+                //     .then(canvas =>
+                //     {
+                //         document.body.appendChild(canvas);
+                //     });
             }
 
             return isRunningIOS() ? await htmlToImage.toBlob(screenshotRegion[0]) : blob;

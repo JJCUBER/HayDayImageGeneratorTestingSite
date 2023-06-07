@@ -128,17 +128,18 @@ td.selected:hover
     --labelOutlineColor: black; /* default */
     text-shadow:
     /* shadow */
-         0px  0px 10px var(--labelOutlineColor),
+         /* 0px  0px 10px var(--labelOutlineColor), */
+         0px  0px 10px purple;
 
     /* outline */
-        -1px -1px  0px var(--labelOutlineColor),
-         0px -1px  0px var(--labelOutlineColor),
-         1px -1px  0px var(--labelOutlineColor),
-         1px  0px  0px var(--labelOutlineColor),
-         1px  1px  0px var(--labelOutlineColor),
-         0px  1px  0px var(--labelOutlineColor),
-        -1px  1px  0px var(--labelOutlineColor),
-        -1px  0px  0px var(--labelOutlineColor);
+        /* -1px -1px  0px var(--labelOutlineColor), */
+        /*  0px -1px  0px var(--labelOutlineColor), */
+        /*  1px -1px  0px var(--labelOutlineColor), */
+        /*  1px  0px  0px var(--labelOutlineColor), */
+        /*  1px  1px  0px var(--labelOutlineColor), */
+        /*  0px  1px  0px var(--labelOutlineColor), */
+        /* -1px  1px  0px var(--labelOutlineColor), */
+        /* -1px  0px  0px var(--labelOutlineColor); */
     /* transition: text-shadow 0.2s; */
 }
 .label:hover
