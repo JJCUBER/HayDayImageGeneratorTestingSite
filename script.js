@@ -527,6 +527,7 @@ function handleAddingItem(e)
     let itemQuantity, prependedQuantityOperator = "";
     let itemQuantityEquation = itemQuantityInput.val().trim();
     // only want to separate starting operator if the item already exists (if the item doesn't exist, the whole quantity should be evaluated as one equation)
+    // TODO -- I think .has is a set/map function
     if(items.has(itemNameFormatted))
     {
         for(let operator of operators)
@@ -882,16 +883,21 @@ function updateItemLayout()
             let customQuantityLabel, customPriceLabel;
             if(shouldShowSelection)
             {
+                // TODO -- I feel like some of this stuff is redundant/repeated stuff from setSelectedState() (though this stuff isn't technically in the DOM yet)
                 if(currItem.customQuantity !== undefined)
                 {
                     customQuantityLabel = document.createElement("p");
                     customQuantityLabel.innerText = currItem.customQuantity;
-                    customQuantityLabel.classList.add("label",  "customLabel", "customQuantityLabel");
+                    customQuantityLabel.classList.add("label", "customLabel", "customQuantityLabel");
                     customQuantityLabel.hidden =  !currItem.isSelected;
                     $(customQuantityLabel).on("click", () =>
                     {
                         itemQuantityInput.trigger("select");
                     });
+
+                    // starts less visible since item is selected and has a custom quantity
+                    if(currItem.isSelected)
+                        quantityLabel.style.opacity = 0.5;
                 }
 
                 if(currItem.customPriceOrMultiplier !== undefined)
@@ -904,6 +910,10 @@ function updateItemLayout()
                     {
                         itemPriceOrMultiplierInput.trigger("select");
                     });
+
+                    // starts less visible since item is selected and has a custom price/mult
+                    if(currItem.isSelected)
+                        priceLabel.style.opacity = 0.5;
                 }
             }
 
@@ -958,6 +968,16 @@ function copyImageToClipboard()
         {
             // TODO -- it sounds like this might also happen with safari on mac occasionally?  I might might also want to check for the browser being safari.
             // need to run a second time on iOS (it sounds like just returning the .toBlob call and .then()'ing it doesn't work based on https://github.com/bubkoo/html-to-image/issues/52#issuecomment-1255708420 , so that's why I'm awaiting it here [I don't think that would really be all so different from just returning and calling .then, but I will just do it like this since it seems to work])
+
+            // TEMP TEST
+            if(isRunningIOS())
+            {
+                const first = await htmlToImage.toBlob(screenshotRegion[0]);
+                const second = await htmlToImage.toBlob(screenshotRegion[0]);
+                if(!first !== second || screenshotBlob !== first)
+                    createSuccessfulCopyNotification();
+            }
+
             return isRunningIOS() ? await htmlToImage.toBlob(screenshotRegion[0]) : blob;
         })
         .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
@@ -1185,7 +1205,12 @@ function setSelectedState(item, cell, isSelected)
     else
         cell.classList.remove("selected");
 
-    $(cell).find(".customLabel").prop("hidden", !isSelected);
+    const cellSelector = $(cell);
+    cellSelector.find(".customLabel").prop("hidden", !isSelected);
+
+    // make quantity/price less visible when this item is selected and has a custom value
+    cellSelector.find(".quantityLabel").css("opacity", isSelected && item.customQuantity !== undefined ? 0.5 : 1);
+    cellSelector.find(".priceLabel").css("opacity", isSelected && item.customPriceOrMultiplier !== undefined ? 0.5 : 1);
 }
 
 function setSelectedStateAll(items, cells, isSelected)
