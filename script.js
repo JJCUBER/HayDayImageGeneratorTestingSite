@@ -855,7 +855,12 @@ function updateItemLayout()
             image.classList.add("itemImage");
             $(image).on("click", () =>
             {
-                itemNameInput.trigger("select");
+                // only want to focus the item name input if not in price calculation mode (also want to return early, since we should only worry about redrawing the items for hiding unselected items if in price calculation mode)
+                if(!getIsInPriceCalculationMode())
+                {
+                    itemNameInput.trigger("select");
+                    return;
+                }
 
                 // need to update the layout to not include items that just got deselected; I am only putting this in the event handler for clicking on the image itself, since I want the user to be able to modify price/mult and quantity without the item temporarily disappearing
                 // this does cause the problem of clicking the border of the cell toggling the item, but not hiding it when the user wants them hidden (since this event only listens for clicking on the image itself, not anywhere in the cell)
