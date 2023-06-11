@@ -551,7 +551,7 @@ $(document).ready(() =>
 
                                 // let tempImg = document.createElement("img");
                                 // tempImg.src = window.URL.createObjectURL(tempBlob);
-                                // document.appendChild(tempImg);
+                                // document.body.appendChild(tempImg);
 
                                 let thing = await htmlToImage.toBlob(screenshotRegion[0]);
                                 tempBlob = thing;
@@ -579,16 +579,10 @@ $(document).ready(() =>
                 msg2.innerHTML = `it worked -- ${tempBlob instanceof Promise} -- ${tempBlob instanceof Blob} -- ${tempBlob instanceof Object}`;
                 document.body.appendChild(msg2);
 
-                // let tempImg = document.createElement("img");
-                // tempImg.src = window.URL.createObjectURL(tempBlob);
-                // document.appendChild(tempImg);
-
-                tempBlob.then((blob) =>
-                {
-                    let tempImg2 = document.createElement("img");
-                    tempImg2.src = window.URL.createObjectURL(blob);
-                    document.appendChild(tempImg2);
-                });
+                // OOPS I was trying to append to document instead of body...
+                let tempImg = document.createElement("img");
+                tempImg.src = window.URL.createObjectURL(tempBlob);
+                document.body.appendChild(tempImg);
             });
         }
         else
