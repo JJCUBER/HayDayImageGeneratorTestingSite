@@ -568,12 +568,27 @@ $(document).ready(() =>
             })
             .finally(() =>
             {
+                let msg = document.createElement("p");
+                msg.innerHTML = "testing";
+                document.body.appendChild(msg);
+
                 if(!tempBlob)
                     return;
+
+                let msg2 = document.createElement("p");
+                msg2.innerHTML = "it worked";
+                document.body.appendChild(msg2);
 
                 let tempImg = document.createElement("img");
                 tempImg.src = window.URL.createObjectURL(tempBlob);
                 document.appendChild(tempImg);
+
+                tempBlob.then(() =>
+                {
+                    let tempImg2 = document.createElement("img");
+                    tempImg2.src = window.URL.createObjectURL(tempBlob);
+                    document.appendChild(tempImg2);
+                });
             });
         }
         else
