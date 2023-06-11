@@ -576,12 +576,12 @@ $(document).ready(() =>
                     return;
 
                 let msg2 = document.createElement("p");
-                msg2.innerHTML = "it worked";
+                msg2.innerHTML = `it worked -- ${tempBlob instanceof Promise} -- ${tempBlob instanceof Blob} -- ${tempBlob instanceof Object}`;
                 document.body.appendChild(msg2);
 
-                let tempImg = document.createElement("img");
-                tempImg.src = window.URL.createObjectURL(tempBlob);
-                document.appendChild(tempImg);
+                // let tempImg = document.createElement("img");
+                // tempImg.src = window.URL.createObjectURL(tempBlob);
+                // document.appendChild(tempImg);
 
                 tempBlob.then((blob) =>
                 {
