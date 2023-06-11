@@ -583,10 +583,10 @@ $(document).ready(() =>
                 tempImg.src = window.URL.createObjectURL(tempBlob);
                 document.appendChild(tempImg);
 
-                tempBlob.then(() =>
+                tempBlob.then((blob) =>
                 {
                     let tempImg2 = document.createElement("img");
-                    tempImg2.src = window.URL.createObjectURL(tempBlob);
+                    tempImg2.src = window.URL.createObjectURL(blob);
                     document.appendChild(tempImg2);
                 });
             });
