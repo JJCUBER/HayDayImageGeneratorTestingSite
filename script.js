@@ -521,6 +521,43 @@ $(document).ready(() =>
     {
         preparedItemNames = prepared;
     });
+
+
+
+
+
+
+
+
+    // TEST
+    $("#copyImageToClipboardButton").on("pointerup", () =>
+    {
+        if(isRunningIOS())
+        {
+            try
+            {
+            navigator.clipboard.write(
+                    [new ClipboardItem(
+                        {
+                            [blob.type]: (async () => await htmlToImage.toBlob(screenshotRegion[0]))()
+                        }
+                    )]
+                )
+            }
+            catch(e)
+            {
+                let err = document.createElement("p");
+                err.innerHTML = e;
+                document.body.appendChild(err);
+            }
+        }
+        else
+        {
+            let elem = document.createElement("p");
+            elem.innerHTML = "Not iOS";
+            document.body.appendChild(elem);
+        }
+    });
 });
 
 
@@ -1010,6 +1047,7 @@ function copyImageToClipboard()
 
     copyImageLoadingWheel.prop("hidden", false);
 
+    /*
     if(isRunningIOS())
     {
         navigator.clipboard.write(
@@ -1026,6 +1064,7 @@ function copyImageToClipboard()
 
         return;
     }
+    */
 
     let screenshotBlob;
     htmlToImage.toBlob(screenshotRegion[0])
