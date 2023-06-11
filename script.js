@@ -537,7 +537,7 @@ $(document).ready(() =>
     {
         if(isRunningIOS())
         {
-            // let tempBlob;
+            let tempBlob;
             navigator.clipboard.write(
                 [new ClipboardItem(
                     {
@@ -545,6 +545,7 @@ $(document).ready(() =>
                             (async () =>
                             {
                                 // IMPORTANT -- I think the issue is that having multiple awaits is effectively chaining promises; iOS only allows to copy DIRECTLY from pointerup/click event (so you can pass an async function to thhe clipboard, but it can only await ONE thing... this is dumb)
+                                // NEVER MIND; I think the issue is that having a variable outside the scope "taints" it in iOS's eyes (when trying to return from it)
                                 await htmlToImage.toBlob(screenshotRegion[0]);
                                 // tempBlob = await htmlToImage.toBlob(screenshotRegion[0]);
 
@@ -552,7 +553,9 @@ $(document).ready(() =>
                                 // tempImg.src = window.URL.createObjectURL(tempBlob);
                                 // document.appendChild(tempImg);
 
-                                return await htmlToImage.toBlob(screenshotRegion[0]);
+                                let thing = await htmlToImage.toBlob(screenshotRegion[0]);
+                                tempBlob = thing;
+                                return thing;
                             })()
                     }
                 )]
@@ -562,8 +565,7 @@ $(document).ready(() =>
                 let err = document.createElement("p");
                 err.innerHTML = e;
                 document.body.appendChild(err);
-            });
-            /*
+            })
             .finally(() =>
             {
                 if(!tempBlob)
@@ -573,7 +575,6 @@ $(document).ready(() =>
                 tempImg.src = window.URL.createObjectURL(tempBlob);
                 document.appendChild(tempImg);
             });
-            */
         }
         else
         {
