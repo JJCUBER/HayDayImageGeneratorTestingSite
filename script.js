@@ -530,7 +530,10 @@ $(document).ready(() =>
 
 
     // TEST
-    $("#copyImageToClipboardButton").on("pointerup", () =>
+    // this works for ios!
+    // $("#copyImageToClipboardButton").on("pointerup", () =>
+    // testing click event instead
+    $("#copyImageToClipboardButton").on("click", () =>
     {
         if(isRunningIOS())
         {
