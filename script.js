@@ -538,34 +538,31 @@ $(document).ready(() =>
         if(isRunningIOS())
         {
             let tempBlob;
-            try
-            {
             navigator.clipboard.write(
-                    [new ClipboardItem(
-                        {
-                            "image/png":
-                                (async () =>
-                                {
-                                    await htmlToImage.toBlob(screenshotRegion[0]);
-                                    tempBlob = await htmlToImage.toBlob(screenshotRegion[0]);
+                [new ClipboardItem(
+                    {
+                        "image/png":
+                            (async () =>
+                            {
+                                await htmlToImage.toBlob(screenshotRegion[0]);
+                                tempBlob = await htmlToImage.toBlob(screenshotRegion[0]);
 
-                                    let tempImg = document.createElement("img");
-                                    tempImg.src = window.URL.createObjectURL(tempBlob);
-                                    document.appendChild(tempImg);
+                                let tempImg = document.createElement("img");
+                                tempImg.src = window.URL.createObjectURL(tempBlob);
+                                document.appendChild(tempImg);
 
-                                    return tempBlob;
-                                })()
-                        }
-                    )]
-                )
-            }
-            catch(e)
+                                return tempBlob;
+                            })()
+                    }
+                )]
+            )
+            .catch(e =>
             {
                 let err = document.createElement("p");
                 err.innerHTML = e;
                 document.body.appendChild(err);
-            }
-            finally
+            })
+            .finally(() =>
             {
                 if(!tempBlob)
                     return;
@@ -573,7 +570,7 @@ $(document).ready(() =>
                 let tempImg = document.createElement("img");
                 tempImg.src = window.URL.createObjectURL(tempBlob);
                 document.appendChild(tempImg);
-            }
+            });
         }
         else
         {
