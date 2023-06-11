@@ -539,7 +539,7 @@ $(document).ready(() =>
             navigator.clipboard.write(
                     [new ClipboardItem(
                         {
-                            [blob.type]: (async () => await htmlToImage.toBlob(screenshotRegion[0]))()
+                            "image/png": (async () => await htmlToImage.toBlob(screenshotRegion[0]))()
                         }
                     )]
                 )
@@ -1065,6 +1065,8 @@ function copyImageToClipboard()
         return;
     }
     */
+    if(isRunningIOS())
+        return;
 
     let screenshotBlob;
     htmlToImage.toBlob(screenshotRegion[0])
