@@ -532,17 +532,29 @@ $(document).ready(() =>
     // TEST
     // this works for ios!
     // $("#copyImageToClipboardButton").on("pointerup", () =>
-    // testing click event instead
+    // testing click event instead -- WORKS
     $("#copyImageToClipboardButton").on("click", () =>
     {
         if(isRunningIOS())
         {
+            let tempBlob;
             try
             {
             navigator.clipboard.write(
                     [new ClipboardItem(
                         {
-                            "image/png": (async () => await htmlToImage.toBlob(screenshotRegion[0]))()
+                            "image/png":
+                                (async () =>
+                                {
+                                    await htmlToImage.toBlob(screenshotRegion[0]);
+                                    tempBlob = await htmlToImage.toBlob(screenshotRegion[0]);
+
+                                    let tempImg = document.createElement("img");
+                                    tempImg.src = window.URL.createObjectURL(tempBlob);
+                                    document.appendChild(tempImg);
+
+                                    return tempBlob;
+                                })()
                         }
                     )]
                 )
@@ -552,6 +564,15 @@ $(document).ready(() =>
                 let err = document.createElement("p");
                 err.innerHTML = e;
                 document.body.appendChild(err);
+            }
+            finally
+            {
+                if(!tempBlob)
+                    return;
+
+                let tempImg = document.createElement("img");
+                tempImg.src = window.URL.createObjectURL(tempBlob);
+                document.appendChild(tempImg);
             }
         }
         else
