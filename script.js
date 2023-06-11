@@ -537,21 +537,22 @@ $(document).ready(() =>
     {
         if(isRunningIOS())
         {
-            let tempBlob;
+            // let tempBlob;
             navigator.clipboard.write(
                 [new ClipboardItem(
                     {
                         "image/png":
                             (async () =>
                             {
+                                // IMPORTANT -- I think the issue is that having multiple awaits is effectively chaining promises; iOS only allows to copy DIRECTLY from pointerup/click event (so you can pass an async function to thhe clipboard, but it can only await ONE thing... this is dumb)
                                 await htmlToImage.toBlob(screenshotRegion[0]);
-                                tempBlob = await htmlToImage.toBlob(screenshotRegion[0]);
+                                // tempBlob = await htmlToImage.toBlob(screenshotRegion[0]);
 
-                                let tempImg = document.createElement("img");
-                                tempImg.src = window.URL.createObjectURL(tempBlob);
-                                document.appendChild(tempImg);
+                                // let tempImg = document.createElement("img");
+                                // tempImg.src = window.URL.createObjectURL(tempBlob);
+                                // document.appendChild(tempImg);
 
-                                return tempBlob;
+                                return await htmlToImage.toBlob(screenshotRegion[0]);
                             })()
                     }
                 )]
@@ -561,7 +562,8 @@ $(document).ready(() =>
                 let err = document.createElement("p");
                 err.innerHTML = e;
                 document.body.appendChild(err);
-            })
+            });
+            /*
             .finally(() =>
             {
                 if(!tempBlob)
@@ -571,6 +573,7 @@ $(document).ready(() =>
                 tempImg.src = window.URL.createObjectURL(tempBlob);
                 document.appendChild(tempImg);
             });
+            */
         }
         else
         {
