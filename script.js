@@ -26,11 +26,11 @@ function isRunningIOS()
 
 /* -------- scripts/Globals.js -------- */
 let itemsPerRow = 8;
-let textListSeparatorSelectedRadio = 0; // , textListCustomSeparator = "";
+let textListSeparatorSelectedRadio = 0;
 
 let itemsPerRowSlider, itemsPerRowLabel, itemNameInput, itemQuantityInput, itemPriceOrMultiplierInput, itemTable;
 let bottomText, screenshotRegion;
-let settingsButton, settingsOverlay, hideSettingsButton, abbreviationMappingTable, bottomTextSettingInput, textListSeparatorRadios, textListCustomSeparatorInput, textListSeparatorCustomRadio, textListFormatInput, priceCalculationItemInput;
+let settingsOverlay, abbreviationMappingTable, bottomTextSettingInput, textListSeparatorRadios, textListCustomSeparatorInput, textListSeparatorCustomRadio, textListFormatInput, priceCalculationItemInput;
 let priceCalculationModeStateSpan;
 let disableInPriceCalculationModeElems, disableOutsidePriceCalculationModeElems;
 let equationVisibilityStateSpan, unselectedItemsVisibilityStateSpan;
@@ -39,8 +39,7 @@ let totalPriceArea, totalPriceHolder, totalPriceMessageHolder, totalPriceEquatio
 let coinImageUrl;
 let priceCalculationItem;
 let priceCalculationModeSelectionInfo;
-let changelogButton, changelogOverlay, changelogInner, hideChangelogButton;
-let failedCopyOverlay, hideFailedCopyButton, failedCopyImageHolder;
+let changelogOverlay, failedCopyOverlay, contactOverlay;
 let copyImageLoadingWheel;
 
 let fuzzyMatchesHolder;
@@ -71,7 +70,6 @@ let abbreviationMapping = new Map([
 
 
 /* -------- scripts/Init.js -------- */
-// TODO -- it might be a good idea to create some class for overlays which include selectors for the overlay itself, the background, box, hideButton, and inner (all of which can be selected using $("BaseIdName .overlayClassName") ); this would also declutter the naming of all the basically repeated variables and all the selecting can be done within the class constructor (it also removes the need to have extra ids in the html)
 $(document).ready(() =>
 {
     itemsPerRowSlider = $("#itemsPerRowSlider");
@@ -84,9 +82,8 @@ $(document).ready(() =>
     bottomText = $("#bottomText");
     screenshotRegion = $("#screenshotRegion");
 
-    settingsButton = $("#settingsButton");
-    settingsOverlay = $("#settingsOverlay");
-    hideSettingsButton = $("#hideSettingsButton");
+    settingsOverlay = new Overlay("settingsOverlay", "showButton");
+
     abbreviationMappingTable = $("#abbreviationMappingTable");
     bottomTextSettingInput = $("#bottomTextSettingInput");
     textListSeparatorRadios = $("input[name='textListSeparatorGroup']");
@@ -110,14 +107,12 @@ $(document).ready(() =>
 
     priceCalculationModeSelectionInfo = $("#priceCalculationModeSelectionInfo");
 
-    changelogButton = $("#changelogButton");
-    changelogOverlay = $("#changelogOverlay");
-    changelogInner = $("#changelogInner");
-    hideChangelogButton = $("#hideChangelogButton");
+    changelogOverlay = new Overlay("changelogOverlay", "showButton");
 
-    failedCopyOverlay = $("#failedCopyOverlay");
-    hideFailedCopyButton = $("#hideFailedCopyButton");
-    failedCopyImageHolder = $("#failedCopyImageHolder");
+    failedCopyOverlay = new Overlay("failedCopyOverlay", "imageHolder");
+
+    /* TODO -- should this be called contactUsOverlay instead? */
+    contactOverlay = new Overlay("contactOverlay", "showButton");
 
     copyImageLoadingWheel = $("#copyImageLoadingWheel");
 
@@ -153,13 +148,15 @@ $(document).ready(() =>
         if(buttons.length < selection)
             return;
 
-        buttons.eq(selection - 1).trigger("mousedown");
+        buttons.eq(selection - 1).trigger("mousedown", {usedKeyboard: true});
         event.preventDefault();
     });
     itemNameInput.on("keyup", (e) =>
     {
-        updateFuzzyMatches();
         handleAddingItem(e);
+
+        // this should be done AFTER handling adding the item, since we want this to show no results if enter was pressed and the name input got wiped
+        updateFuzzyMatches();
     });
     itemQuantityInput.on("keyup", handleAddingItem);
     itemPriceOrMultiplierInput.on("keyup", handleAddingItem);
@@ -174,23 +171,23 @@ $(document).ready(() =>
     // TODO -- all of this event stuff seems to be identical for both the settings and changelog popups (and probably for potential future ones as well); I should probably turn at least part of this into some function with parameters for the corresponding jquery objects/selectors (for show button, hide button, background, etc.)
 
     // TODO -- I might want to eventually move this css stuff to a class, then use classList to add/remove these classes from the respective elements?  https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
-    settingsButton.on("click", () =>
+    settingsOverlay.showButton.on("click", () =>
     {
-        settingsOverlay.prop("hidden", false);
+        settingsOverlay.overlay.prop("hidden", false);
         // disables scrolling the main page and removes the scrollbar from the side while the settings button is focused ( https://stackoverflow.com/questions/9280258/prevent-body-scrolling-but-allow-overlay-scrolling )
         $("body").css("overflow", "hidden");
         // prevents the screenshot region from shifting over to the right due to the scrollbar now missing ( https://stackoverflow.com/questions/1417934/how-to-prevent-scrollbar-from-repositioning-web-page and https://css-tricks.com/elegant-fix-jumping-scrollbar-issue/ and https://aykevl.nl/2014/09/fix-jumping-scrollbar )
         screenshotRegion.css("margin-right", "calc(100vw - 100%)");
     });
-    hideSettingsButton.on("click", () =>
+    settingsOverlay.hideButton.on("click", () =>
     {
-        settingsOverlay.prop("hidden", true);
+        settingsOverlay.overlay.prop("hidden", true);
         $("body").css("overflow", "visible");
         screenshotRegion.css("margin-right", "unset");
     });
-    $("#settingsBackground").on("click", () =>
+    settingsOverlay.background.on("click", () =>
     {
-        hideSettingsButton.trigger("click");
+        settingsOverlay.hideButton.trigger("click");
     });
 
 
@@ -238,7 +235,7 @@ $(document).ready(() =>
     });
     bottomText.on("click", () =>
     {
-        settingsButton.trigger("click");
+        settingsOverlay.showButton.trigger("click");
         bottomTextSettingInput.trigger("select");
     });
 
@@ -463,38 +460,59 @@ $(document).ready(() =>
 
     setUpChangelog();
 
-    changelogButton.on("click", () =>
+    changelogOverlay.showButton.on("click", () =>
     {
-        changelogOverlay.prop("hidden", false);
+        changelogOverlay.overlay.prop("hidden", false);
         // disables scrolling the main page and removes the scrollbar from the side while the settings button is focused ( https://stackoverflow.com/questions/9280258/prevent-body-scrolling-but-allow-overlay-scrolling )
         $("body").css("overflow", "hidden");
         // prevents the screenshot region from shifting over to the right due to the scrollbar now missing ( https://stackoverflow.com/questions/1417934/how-to-prevent-scrollbar-from-repositioning-web-page and https://css-tricks.com/elegant-fix-jumping-scrollbar-issue/ and https://aykevl.nl/2014/09/fix-jumping-scrollbar )
         screenshotRegion.css("margin-right", "calc(100vw - 100%)");
     });
-    hideChangelogButton.on("click", () =>
+    changelogOverlay.hideButton.on("click", () =>
     {
-        changelogOverlay.prop("hidden", true);
+        changelogOverlay.overlay.prop("hidden", true);
         $("body").css("overflow", "visible");
         screenshotRegion.css("margin-right", "unset");
     });
-    $("#changelogBackground").on("click", () =>
+    changelogOverlay.background.on("click", () =>
     {
-        hideChangelogButton.trigger("click");
+        changelogOverlay.hideButton.trigger("click");
     });
 
     handleVersionChange();
 
 
 
-    hideFailedCopyButton.on("click", () =>
+    failedCopyOverlay.hideButton.on("click", () =>
     {
-        failedCopyOverlay.prop("hidden", true);
+        failedCopyOverlay.overlay.prop("hidden", true);
         $("body").css("overflow", "visible");
         screenshotRegion.css("margin-right", "unset");
     });
-    $("#failedCopyBackground").on("click", () =>
+    failedCopyOverlay.background.on("click", () =>
     {
-        hideFailedCopyButton.trigger("click");
+        failedCopyOverlay.hideButton.trigger("click");
+    });
+
+
+
+    contactOverlay.showButton.on("click", () =>
+    {
+        contactOverlay.overlay.prop("hidden", false);
+        // disables scrolling the main page and removes the scrollbar from the side while the settings button is focused ( https://stackoverflow.com/questions/9280258/prevent-body-scrolling-but-allow-overlay-scrolling )
+        $("body").css("overflow", "hidden");
+        // prevents the screenshot region from shifting over to the right due to the scrollbar now missing ( https://stackoverflow.com/questions/1417934/how-to-prevent-scrollbar-from-repositioning-web-page and https://css-tricks.com/elegant-fix-jumping-scrollbar-issue/ and https://aykevl.nl/2014/09/fix-jumping-scrollbar )
+        screenshotRegion.css("margin-right", "calc(100vw - 100%)");
+    });
+    contactOverlay.hideButton.on("click", () =>
+    {
+        contactOverlay.overlay.prop("hidden", true);
+        $("body").css("overflow", "visible");
+        screenshotRegion.css("margin-right", "unset");
+    });
+    contactOverlay.background.on("click", () =>
+    {
+        contactOverlay.hideButton.trigger("click");
     });
 
 
@@ -504,6 +522,34 @@ $(document).ready(() =>
         preparedItemNames = prepared;
     });
 });
+
+
+/* -------- scripts/Overlay.js -------- */
+// TODO -- maybe make show and hide functions?
+class Overlay
+{
+    // TODO -- extraIds is a bad name; it should be something pertaining to extra overlay elements (showButton, imageHolder, etc.)
+    // TODO - I might want to make a list of dictionary mappings from extra overlay element name to function for settings up (since I have repeated code pertaining to showButtons)
+    constructor(overlayId, ...extraIds)
+    {
+        this.overlay = $(`#${overlayId}`);
+
+        this.background = this.overlay.find(".overlayBackground");
+        this.box = this.overlay.find(".overlayBox");
+        this.hideButton = this.overlay.find(".overlayHideButton");
+        this.inner = this.overlay.find(".overlayInner");
+
+        // add the extra ids as valid this. entries
+        for(let extraId of extraIds)
+        {
+            if(!extraId.length)
+                continue;
+
+            const extraIdFirstUpper = extraId[0].toUpperCase() + extraId.slice(1);
+            this[extraId] = $(`#${overlayId}${extraIdFirstUpper}`);
+        }
+    }
+}
 
 
 /* -------- scripts/Item.js -------- */
@@ -855,17 +901,14 @@ function updateItemLayout()
             image.classList.add("itemImage");
             $(image).on("click", () =>
             {
-                // only want to focus the item name input if not in price calculation mode (also want to return early, since we should only worry about redrawing the items for hiding unselected items if in price calculation mode)
-                if(!getIsInPriceCalculationMode())
-                {
+                // only want to focus the item name input if not in price calculation mode
+                // TODO -- maybe the name input should never be focused in general, since it never really makes sense to want to keep all the same price and quantities, but change the name (effectively duplicating the item info but with a different item name)?
+                if(!shouldShowSelection)
                     itemNameInput.trigger("select");
-                    return;
-                }
-
                 // need to update the layout to not include items that just got deselected; I am only putting this in the event handler for clicking on the image itself, since I want the user to be able to modify price/mult and quantity without the item temporarily disappearing
                 // this does cause the problem of clicking the border of the cell toggling the item, but not hiding it when the user wants them hidden (since this event only listens for clicking on the image itself, not anywhere in the cell)
-                // TODO -- I'm wondering if I should make clicking on quantity/price not change the state of the selection in general, though that  could be a bit annoying if the user is trying to quickly select items.
-                if(shouldHideUnselectedItems)
+                // TODO -- I'm wondering if I should make clicking on quantity/price not change the state of the selection in general, though that could be a bit annoying if the user is trying to quickly select items.
+                else if(shouldHideUnselectedItems)
                     updateItemLayout();
             });
 
@@ -975,12 +1018,19 @@ function copyImageToClipboard()
             // need to run a second time on iOS (it sounds like just returning the .toBlob call and .then()'ing it doesn't work based on https://github.com/bubkoo/html-to-image/issues/52#issuecomment-1255708420 , so that's why I'm awaiting it here [I don't think that would really be all so different from just returning and calling .then, but I will just do it like this since it seems to work])
             return isRunningIOS() ? await htmlToImage.toBlob(screenshotRegion[0]) : blob;
         })
-        .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
+    // .then(blob => {console.log(blob, blob.type, {[blob.type]: 2}, {"image/png": 2}); return blob;})
+        // .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
+        .then(blob => new ClipboardItem({[blob.type]: screenshotBlob = blob})) // also stores the blob in case the error is caught later
         .then(clipboardItem => navigator.clipboard.write([clipboardItem]))
         .then(createSuccessfulCopyNotification)
         .catch(e =>
         {
             console.log("Unable to generate image and/or copy it to clipboard --", e);
+
+            // TEMP
+            let err = document.createElement("p");
+            err.innerHTML = e;
+            document.body.appendChild(err);
 
             // I might want to eventually catch right after toBlob() and do the above, then catch here to have a fallback of showing the image on screen for the user to save (or prompt to download).
 
@@ -989,12 +1039,12 @@ function copyImageToClipboard()
             // show failed copy overlay if the screenshot was successfully generated
             if(screenshotBlob)
             {
-                failedCopyImageHolder[0].src = window.URL.createObjectURL(screenshotBlob);
+                failedCopyOverlay.imageHolder[0].src = window.URL.createObjectURL(screenshotBlob);
 
 
                 // shows the failed copy overlay
 
-                failedCopyOverlay.prop("hidden", false);
+                failedCopyOverlay.overlay.prop("hidden", false);
                 // disables scrolling the main page and removes the scrollbar from the side while the settings button is focused ( https://stackoverflow.com/questions/9280258/prevent-body-scrolling-but-allow-overlay-scrolling )
                 $("body").css("overflow", "hidden");
                 // prevents the screenshot region from shifting over to the right due to the scrollbar now missing ( https://stackoverflow.com/questions/1417934/how-to-prevent-scrollbar-from-repositioning-web-page and https://css-tricks.com/elegant-fix-jumping-scrollbar-issue/ and https://aykevl.nl/2014/09/fix-jumping-scrollbar )
@@ -1236,7 +1286,10 @@ async function prepareAllItemNames()
     return prepared;
 }
 
-// unfortunately, a few extra "item" names which are neither crops nor products get included ("Honey Mask" which is a duplicate of "Honey Face Mask", "Field", "Apple Tree", "Shop Icon", and "Coins"); I could manually remove these, but I'm not sure if that's a good idea.
+// gotten from https://hayday.fandom.com/wiki/Supplies (if I got the images for these the same way as I did for everything else, there would be a ton of building images listed as items)
+const suppliesNames = ["Axe", "Dynamite", "Saw", "Shovel", "TNT Barrel", "Pickaxe", "Bolt", "Brick", "Duct Tape", "Hammer", "Hand Drill", "Nail", "Paint Bucket", "Plank", "Screw", "Stone Block", "Tar Bucket", "Wood Panel", "Land Deed", "Mallet", "Map Piece", "Marker Stake"];
+// extraneous "item"/image names (due to how the item names are fetched) that shouldn't be included; "Honey Mask" is a duplicate of "Honey Face Mask"
+const nameBlacklist = new Set(["Chicken Feed", "Cow Feed", "Pig Feed", "Sheep Feed", "Red Lure", "Green Lure", "Blue Lure", "Purple Lure", "Gold Lure", "Fishing Net", "Mystery Net", "Goat Feed", "Lobster Trap", "Duck Trap", "Honey Mask", "Field", "Apple Tree", "Shop Icon", "Coins", "Experience"]);
 async function getAllItemNames()
 {
     const fetchPortion = (pageName) =>
@@ -1258,8 +1311,9 @@ async function getAllItemNames()
 
     const productNames = await fetchPortion("Products");
     const cropNames = await fetchPortion("Crops");
+    const animalProductNames = await fetchPortion("Animal_Goods");
 
-    return productNames.concat(cropNames);
+    return productNames.concat(cropNames, animalProductNames, suppliesNames).filter(name => !nameBlacklist.has(name));
 }
 
 function updateFuzzyMatches()
@@ -1282,13 +1336,15 @@ function updateFuzzyMatches()
         const button = document.createElement("button");
         button.tabIndex = -1;
         button.innerHTML = fuzzysort.highlight(match, "<b style='color: orange;'>", "</b>");
-        $(button).on("mousedown", {itemName: match.target}, (event) =>
+        $(button).on("mousedown", {itemName: match.target}, (event, customParams) =>
         {
             itemNameInput.val(event.data.itemName);
 
             // need to wait for the mouseup event in order to refocus/reselect the input field (using .one to make sure it only happens once, and using the document as the object to ensure this occurs no matter where on the screen the mouseup happens)
             // TODO -- I need to standardise all of my arrow functions; particularly, I need to decide whether to always include the () even for single parameter, and I need to determine whether it is a good idea to have arrow functions like this that are a single line (without {}) which calls a function (I don't know how "proper" this is, and it could easily lead to accidentally forgetting the () =>, causing it to misbehave)
-            $(document).one("mouseup", () => itemNameInput.trigger("select"));
+            // TODO -- should I keep the matches empty after the user selects one (until they start typing again)?
+            if(!customParams || !customParams.usedKeyboard) // don't want to do this if the user selected a match using the keyboard via 1-9,0
+                $(document).one("mouseup", () => itemNameInput.trigger("select"));
         });
 
         const p = document.createElement("p");
@@ -1497,6 +1553,32 @@ function saveItemsToLocalStorage()
 
 /* -------- scripts/Changelog.js -------- */
 const changelog = new Map([
+    ["v2.5", `Features:
+- Added a "Contact" overlay which has a link to the discord server I created for this tool, along with a link for creating an issue on GitHub
+
+UI Changes:
+- Added a slight shadow/outline to item images, along with changing the color when hovering (this gives a bit more contrast to items with a similar color to the background)
+- Made the minimum width for the box portion of overlays be 20% (that way, it wouldn't ever be too small)
+
+Misc:
+- A fair bit of code cleanup`],
+    ["v2.4.2", `UI Changes:
+- Made the "image failed to copy" overlay always have a width of 80% (the image would be quite tiny on some devices otherwise)`],
+    ["v2.4.1", `UI Changes:
+- Made generated image in (failed to copy) overlay rescale in size to properly fit on screen
+
+Bug Fixes:
+- Added animal byproducts to the search functionality (they were previously missing, though those items could still be added if you typed the full name out)`],
+    ["v2.4", `Features:
+- Added all the names of tools and expansion materials to the fuzzy searching list (they were always addable, but they previously weren't part of the list of terms to show as matches)
+- Made a blacklist to the fuzzy search list for some item names which aren't sellable (such as lures and feed); you can still add the items by typing the full names if you really want to, though
+
+UI Changes:
+- Made the name input no longer get focused when clicking on the image of an item while in price calculation mode (this makes it less annoying to select/deselect items on mobile, since the name input will no longer be focused with every click)
+- Made the fuzzy matches list get cleared after submitting an item
+
+Bug Fixes:
+- Fixed an obscure bug where typing 1-9,0 to select a fuzzy match would still add an event to the document, where the first click anywhere would refocus the name input`],
     ["v2.3.2", `UI Changes:
 - When specifying a custom price or quantity for a selected item (in price calculation mode), the original value now gets dimmed out to make it more clear.
 - Outlines and shadows now look slightly different (look at Bug Fixes for more info)
@@ -1686,7 +1768,7 @@ function setUpChangelog()
     }
 
     // effectively interweaves an hr element between each change div
-    changelogInner.append(changes.flatMap(elem => [elem, document.createElement("hr")]).slice(0, -1));
+    changelogOverlay.inner.append(changes.flatMap(elem => [elem, document.createElement("hr")]).slice(0, -1));
 }
 
 function handleVersionChange()
@@ -1699,10 +1781,10 @@ function handleVersionChange()
 
     localStorage.setItem("lastUsedVersion", latestVersion);
 
-    const latestVersionHeader = changelogInner.find("h2")[0];
+    const latestVersionHeader = changelogOverlay.inner.find("h2")[0];
     latestVersionHeader.innerText += " -- NEW!";
     latestVersionHeader.style.color = "red";
 
-    changelogButton.trigger("click");
+    changelogOverlay.showButton.trigger("click");
 }
 
