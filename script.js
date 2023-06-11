@@ -529,6 +529,7 @@ $(document).ready(() =>
 
 
 
+    /*
     // TEST
     // this works for ios!
     // $("#copyImageToClipboardButton").on("pointerup", () =>
@@ -592,6 +593,7 @@ $(document).ready(() =>
             document.body.appendChild(elem);
         }
     });
+    */
 });
 
 
@@ -1099,17 +1101,47 @@ function copyImageToClipboard()
         return;
     }
     */
-    if(isRunningIOS())
-        return;
+    // if(isRunningIOS())
+    //     return;
 
     let screenshotBlob;
-    htmlToImage.toBlob(screenshotRegion[0])
+    let promise;
+    if(isRunningIOS())
+    {
+        promise = navigator.clipboard.write(
+            [new ClipboardItem(
+                {
+                    "image/png":
+                        (async () =>
+                        {
+                            // IMPORTANT -- I think the issue is that having multiple awaits is effectively chaining promises; iOS only allows to copy DIRECTLY from pointerup/click event (so you can pass an async function to thhe clipboard, but it can only await ONE thing... this is dumb)
+                            // NEVER MIND; I think the issue is that having a variable outside the scope "taints" it in iOS's eyes (when trying to return from it)
+                            await htmlToImage.toBlob(screenshotRegion[0]);
+                            // tempBlob = await htmlToImage.toBlob(screenshotRegion[0]);
+
+                            // let tempImg = document.createElement("img");
+                            // tempImg.src = window.URL.createObjectURL(tempBlob);
+                            // document.body.appendChild(tempImg);
+
+                            let temp = await htmlToImage.toBlob(screenshotRegion[0]);
+                            screenshotBlob = temp;
+                            return temp;
+                        })()
+                }
+            )]
+        );
+    }
+    else
+    {
+    promise = htmlToImage.toBlob(screenshotRegion[0])
         .then(async (blob) =>
         {
             // TODO -- it sounds like this might also happen with safari on mac occasionally?  I might might also want to check for the browser being safari.
             // need to run a second time on iOS (it sounds like just returning the .toBlob call and .then()'ing it doesn't work based on https://github.com/bubkoo/html-to-image/issues/52#issuecomment-1255708420 , so that's why I'm awaiting it here [I don't think that would really be all so different from just returning and calling .then, but I will just do it like this since it seems to work])
             return isRunningIOS() ? await htmlToImage.toBlob(screenshotRegion[0]) : blob;
         })
+
+    /*
     // .then(blob => {console.log(blob, blob.type, {[blob.type]: 2}, {"image/png": 2}); return blob;})
         // .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
         // .then(blob => new ClipboardItem({[blob.type]: screenshotBlob = blob})) // also stores the blob in case the error is caught later
@@ -1127,15 +1159,23 @@ function copyImageToClipboard()
                 )]
             );
         }) // also stores the blob in case the error is caught later
+    */
+
+
+
+        .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
+        .then(clipboardItem => navigator.clipboard.write([clipboardItem]))
+    }
+    promise
         .then(createSuccessfulCopyNotification)
         .catch(e =>
         {
             console.log("Unable to generate image and/or copy it to clipboard --", e);
 
             // TEMP
-            let err = document.createElement("p");
-            err.innerHTML = e;
-            document.body.appendChild(err);
+            // let err = document.createElement("p");
+            // err.innerHTML = e;
+            // document.body.appendChild(err);
 
             // I might want to eventually catch right after toBlob() and do the above, then catch here to have a fallback of showing the image on screen for the user to save (or prompt to download).
 
