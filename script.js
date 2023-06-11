@@ -521,79 +521,6 @@ $(document).ready(() =>
     {
         preparedItemNames = prepared;
     });
-
-
-
-
-
-
-
-
-    /*
-    // TEST
-    // this works for ios!
-    // $("#copyImageToClipboardButton").on("pointerup", () =>
-    // testing click event instead -- WORKS
-    $("#copyImageToClipboardButton").on("click", () =>
-    {
-        if(isRunningIOS())
-        {
-            let tempBlob;
-            navigator.clipboard.write(
-                [new ClipboardItem(
-                    {
-                        "image/png":
-                            (async () =>
-                            {
-                                // IMPORTANT -- I think the issue is that having multiple awaits is effectively chaining promises; iOS only allows to copy DIRECTLY from pointerup/click event (so you can pass an async function to thhe clipboard, but it can only await ONE thing... this is dumb)
-                                // NEVER MIND; I think the issue is that having a variable outside the scope "taints" it in iOS's eyes (when trying to return from it)
-                                await htmlToImage.toBlob(screenshotRegion[0]);
-                                // tempBlob = await htmlToImage.toBlob(screenshotRegion[0]);
-
-                                // let tempImg = document.createElement("img");
-                                // tempImg.src = window.URL.createObjectURL(tempBlob);
-                                // document.body.appendChild(tempImg);
-
-                                let thing = await htmlToImage.toBlob(screenshotRegion[0]);
-                                tempBlob = thing;
-                                return thing;
-                            })()
-                    }
-                )]
-            )
-            .catch(e =>
-            {
-                let err = document.createElement("p");
-                err.innerHTML = e;
-                document.body.appendChild(err);
-            })
-            .finally(() =>
-            {
-                let msg = document.createElement("p");
-                msg.innerHTML = "testing";
-                document.body.appendChild(msg);
-
-                if(!tempBlob)
-                    return;
-
-                let msg2 = document.createElement("p");
-                msg2.innerHTML = `it worked -- ${tempBlob instanceof Promise} -- ${tempBlob instanceof Blob} -- ${tempBlob instanceof Object}`;
-                document.body.appendChild(msg2);
-
-                // OOPS I was trying to append to document instead of body...
-                let tempImg = document.createElement("img");
-                tempImg.src = window.URL.createObjectURL(tempBlob);
-                document.body.appendChild(tempImg);
-            });
-        }
-        else
-        {
-            let elem = document.createElement("p");
-            elem.innerHTML = "Not iOS";
-            document.body.appendChild(elem);
-        }
-    });
-    */
 });
 
 
@@ -1083,101 +1010,43 @@ function copyImageToClipboard()
 
     copyImageLoadingWheel.prop("hidden", false);
 
-    /*
-    if(isRunningIOS())
-    {
-        navigator.clipboard.write(
-                [new ClipboardItem(
-                    {
-                        [blob.type]: (async () => await htmlToImage.toBlob(screenshotRegion[0]))()
-                    }
-                )]
-            )
-
-        let elem = document.createElement("p");
-        elem.innerHTML = "Hopefully worked";
-        document.body.appendChild(elem);
-
-        return;
-    }
-    */
-    // if(isRunningIOS())
-    //     return;
 
     let screenshotBlob;
-    let promise;
+    let clipboardWrittenPromise;
+    // In order for copying an image to clipboard on iOS to work, you HAVE to effectively do it directly in the click (more accurately, pointerup) event; this means that having some promises .then()'d is not "acceptable": https://stackoverflow.com/questions/65356108/how-to-use-clipboard-api-to-write-image-to-clipboard-in-safari  AND  https://stackoverflow.com/questions/62327358/javascript-clipboard-api-safari-ios-notallowederror-message  AND  https://webkit.org/blog/10247/new-webkit-features-in-safari-13-1/
     if(isRunningIOS())
     {
-        promise = navigator.clipboard.write(
+        clipboardWrittenPromise = navigator.clipboard.write(
             [new ClipboardItem(
                 {
                     "image/png":
                         (async () =>
                         {
-                            // IMPORTANT -- I think the issue is that having multiple awaits is effectively chaining promises; iOS only allows to copy DIRECTLY from pointerup/click event (so you can pass an async function to thhe clipboard, but it can only await ONE thing... this is dumb)
-                            // NEVER MIND; I think the issue is that having a variable outside the scope "taints" it in iOS's eyes (when trying to return from it)
+                            // need to run a second time on iOS (it sounds like just returning the .toBlob call and .then()'ing it doesn't work based on https://github.com/bubkoo/html-to-image/issues/52#issuecomment-1255708420 , so that's why I'm awaiting it here [I don't think that would really be all so different from just returning and calling .then, but I will just do it like this since it seems to work])
+                            // TODO -- it sounds like this might also happen with safari on mac occasionally?  I might might also want to check for the browser being safari.
                             await htmlToImage.toBlob(screenshotRegion[0]);
-                            // tempBlob = await htmlToImage.toBlob(screenshotRegion[0]);
+                            let blob = await htmlToImage.toBlob(screenshotRegion[0]);
 
-                            // let tempImg = document.createElement("img");
-                            // tempImg.src = window.URL.createObjectURL(tempBlob);
-                            // document.body.appendChild(tempImg);
+                            screenshotBlob = blob; // I'm pretty sure this has to be done separately, otherwise iOS gets mad (probably due to using a variable of outer scope that is "tainted")
 
-                            let temp = await htmlToImage.toBlob(screenshotRegion[0]);
-                            screenshotBlob = temp;
-                            return temp;
+                            return blob;
                         })()
                 }
             )]
         );
     }
-    else
+    else // not iOS
     {
-    promise = htmlToImage.toBlob(screenshotRegion[0])
-        .then(async (blob) =>
-        {
-            // TODO -- it sounds like this might also happen with safari on mac occasionally?  I might might also want to check for the browser being safari.
-            // need to run a second time on iOS (it sounds like just returning the .toBlob call and .then()'ing it doesn't work based on https://github.com/bubkoo/html-to-image/issues/52#issuecomment-1255708420 , so that's why I'm awaiting it here [I don't think that would really be all so different from just returning and calling .then, but I will just do it like this since it seems to work])
-            return isRunningIOS() ? await htmlToImage.toBlob(screenshotRegion[0]) : blob;
-        })
-
-    /*
-    // .then(blob => {console.log(blob, blob.type, {[blob.type]: 2}, {"image/png": 2}); return blob;})
-        // .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
-        // .then(blob => new ClipboardItem({[blob.type]: screenshotBlob = blob})) // also stores the blob in case the error is caught later
-        // .then(clipboardItem => navigator.clipboard.write([clipboardItem]))
-        // *** I think that clipboarditem has to be done in-place for iOS for some reason? ***
-        // .then(blob => navigator.clipboard.write([new ClipboardItem({[blob.type]: screenshotBlob = blob})])) // also stores the blob in case the error is caught later
-        .then(blob =>
-        {
-            screenshotBlob = blob;
-            return navigator.clipboard.write(
-                [new ClipboardItem(
-                    {
-                        [blob.type]: (async () => await htmlToImage.toBlob(screenshotRegion[0]))()
-                    }
-                )]
-            );
-        }) // also stores the blob in case the error is caught later
-    */
-
-
-
-        .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
-        .then(clipboardItem => navigator.clipboard.write([clipboardItem]))
+        clipboardWrittenPromise = htmlToImage.toBlob(screenshotRegion[0])
+            .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
+            .then(clipboardItem => navigator.clipboard.write([clipboardItem]));
     }
-    promise
+
+    clipboardWrittenPromise
         .then(createSuccessfulCopyNotification)
         .catch(e =>
         {
             console.log("Unable to generate image and/or copy it to clipboard --", e);
-
-            // TEMP
-            // let err = document.createElement("p");
-            // err.innerHTML = e;
-            // document.body.appendChild(err);
-
-            // I might want to eventually catch right after toBlob() and do the above, then catch here to have a fallback of showing the image on screen for the user to save (or prompt to download).
 
             createFailedCopyNotification();
 
@@ -1203,7 +1072,6 @@ function copyImageToClipboard()
 
             copyImageLoadingWheel.prop("hidden", true);
         });
-
 }
 
 function copyAsTextListToClipboard()
