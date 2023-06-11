@@ -1010,6 +1010,23 @@ function copyImageToClipboard()
 
     copyImageLoadingWheel.prop("hidden", false);
 
+    if(isRunningIOS())
+    {
+        navigator.clipboard.write(
+                [new ClipboardItem(
+                    {
+                        [blob.type]: (async () => await htmlToImage.toBlob(screenshotRegion[0]))()
+                    }
+                )]
+            )
+
+        let elem = document.createElement("p");
+        elem.innerHTML = "Hopefully worked";
+        document.body.appendChild(elem);
+
+        return;
+    }
+
     let screenshotBlob;
     htmlToImage.toBlob(screenshotRegion[0])
         .then(async (blob) =>
@@ -1033,7 +1050,7 @@ function copyImageToClipboard()
                         [blob.type]: (async () => await htmlToImage.toBlob(screenshotRegion[0]))()
                     }
                 )]
-            )
+            );
         }) // also stores the blob in case the error is caught later
         .then(createSuccessfulCopyNotification)
         .catch(e =>
