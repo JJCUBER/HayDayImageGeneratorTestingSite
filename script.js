@@ -1020,8 +1020,10 @@ function copyImageToClipboard()
         })
     // .then(blob => {console.log(blob, blob.type, {[blob.type]: 2}, {"image/png": 2}); return blob;})
         // .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
-        .then(blob => new ClipboardItem({[blob.type]: screenshotBlob = blob})) // also stores the blob in case the error is caught later
-        .then(clipboardItem => navigator.clipboard.write([clipboardItem]))
+        // .then(blob => new ClipboardItem({[blob.type]: screenshotBlob = blob})) // also stores the blob in case the error is caught later
+        // .then(clipboardItem => navigator.clipboard.write([clipboardItem]))
+        // *** I think that clipboarditem has to be done in-place for iOS for some reason? ***
+        .then(blob => navigator.clipboard.write(new ClipboardItem({[blob.type]: screenshotBlob = blob}))) // also stores the blob in case the error is caught later
         .then(createSuccessfulCopyNotification)
         .catch(e =>
         {
