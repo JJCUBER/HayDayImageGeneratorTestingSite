@@ -59,6 +59,8 @@
         <label for="itemPriceOrMultiplierInput">Price/Multiplier</label>
         <input type="text" id="itemPriceOrMultiplierInput" value="5x">
 
+        <button id="itemSubmitButton">Submit</button>
+
         <br>
         <div style="height: 10px;"></div>
 
@@ -149,6 +151,21 @@
 
                     <h2>Item for Price Calculation</h2>
                     <input type="text" id="priceCalculationItemInput">
+
+                    <hr>
+
+                    <h2>Selections</h2>
+
+                    <div style="display: inline-block; text-align: left;">
+                        <input type="checkbox" id="defaultItemsToSelectedCheckbox">
+                        <label for="defaultItemsToSelectedCheckbox">Default new items to selected</label>
+                        <br>
+                        <input type="checkbox" id="alwaysShowSelectedPriceCheckbox">
+                        <label for="alwaysShowSelectedPriceCheckbox">Always show selected price</label>
+                        <br>
+                        <input type="checkbox" id="persistSelectionCheckbox">
+                        <label for="persistSelectionCheckbox">Save selection and custom values</label>
+                    </div>
                 </div>
             </div>
         </div>

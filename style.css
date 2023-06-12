@@ -43,6 +43,13 @@ input, textarea
     background-color: #ff05;
 }
 
+/* Removes the weird "default" styling mainly present on iOS devices (non-prefixed property was only fully supported by iOS in 2022, so providing both just in case: https://developer.mozilla.org/en-US/docs/Web/CSS/appearance#browser_compatibility ) */
+button, input[type="text"], textarea
+{
+    appearance: none;
+    -webkit-appearance: none;
+}
+
 td
 {
     border: 3px solid;

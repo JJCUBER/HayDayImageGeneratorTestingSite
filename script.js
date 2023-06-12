@@ -15,10 +15,10 @@ function convertToTitleSnakeCase(phrase)
 }
 
 // gotten from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios
-const iOSPlatformList = ['iPad Simulator', 'iPhone Simulator', 'iPod Simulator', 'iPad', 'iPhone', 'iPod'];
+const iOSPlatformList = new Set(["iPad Simulator", "iPhone Simulator", "iPod Simulator", "iPad", "iPhone", "iPod"]);
 function isRunningIOS()
 {
-    return iOSPlatformList.includes(navigator.platform) ||
+    return iOSPlatformList.has(navigator.platform) ||
         // iPad on iOS 13 detection
         (navigator.userAgent.includes("Mac") && "ontouchend" in document);
 }
@@ -160,6 +160,7 @@ $(document).ready(() =>
     });
     itemQuantityInput.on("keyup", handleAddingItem);
     itemPriceOrMultiplierInput.on("keyup", handleAddingItem);
+    $("#itemSubmitButton").on("click", (e) => handleAddingItem(e, true));
 
 
     const coinImagePromise = getImageUrl("Coin", 28)
@@ -554,8 +555,9 @@ class Overlay
 
 /* -------- scripts/Item.js -------- */
 // There are more operators than the ones here technically supported by math.js, but I feel like these are all the "reasonable" ones to support for the automatic prepending of the old quantity/custom quantity ( https://mathjs.org/docs/expressions/syntax.html )
+// TODO -- I could theoretically make this a set, but that's probably not a good idea since the "keys" have differing lengths and I'm just looking for whether a given equation string starts with one of these keys
 const operators = ['+', '-', '*', '/', '^', '%', "mod", '&', '|', "<<", ">>>", ">>"]; // >>> should be before >> to ensure the full operator gets removed then readded later (if >> was first, ">>> 5" would only remove the first 2 '>' leaving "> 5")
-function handleAddingItem(e)
+function handleAddingItem(e, usedSubmitButton = false)
 {
     // only want the name box to have the invalid red border until the user starts typing again (tabbing into this textbox also cancels it; unfortunately, this gets removed almost immediately if the user starts typing right after pressing enter, since it takes a bit of time for the fetch to occur and for the invalid class to be added, if needed)
     if(itemNameInput.hasClass("invalid"))
@@ -563,7 +565,7 @@ function handleAddingItem(e)
 
 
     // TODO -- might want to be using e.key instead
-    if(e.code !== "Enter")
+    if(!usedSubmitButton && e.code !== "Enter")
         return;
 
     const itemNameFormatted = formatItemName(itemNameInput.val());
@@ -573,7 +575,6 @@ function handleAddingItem(e)
     let itemQuantity, prependedQuantityOperator = "";
     let itemQuantityEquation = itemQuantityInput.val().trim();
     // only want to separate starting operator if the item already exists (if the item doesn't exist, the whole quantity should be evaluated as one equation)
-    // TODO -- I think .has is a set/map function
     if(items.has(itemNameFormatted))
     {
         for(let operator of operators)
@@ -615,7 +616,7 @@ function handleAddingItem(e)
 
 class Item
 {
-    static fieldsToOmitFromLocalStorage = ["customQuantity", "customPriceOrMultiplier", "isSelected"];
+    static fieldsToOmitFromLocalStorage = new Set(["customQuantity", "customPriceOrMultiplier", "isSelected"]);
     constructor(name, quantity, url, priceOrMultiplier, maxPrice)
     {
         this.name = name;
@@ -1560,12 +1561,14 @@ function saveAllToLocalStorage()
 
 function saveItemsToLocalStorage()
 {
-    localStorage.setItem("items", JSON.stringify([...items], (key, value) => Item.fieldsToOmitFromLocalStorage.includes(key) ? undefined : value));
+    localStorage.setItem("items", JSON.stringify([...items], (key, value) => Item.fieldsToOmitFromLocalStorage.has(key) ? undefined : value));
 }
 
 
 /* -------- scripts/Changelog.js -------- */
 const changelog = new Map([
+    ["v2.6", `Major Fix:
+- Copy image button (finally) works on mobile!  It should automatically copy the image just by clicking the button.  If it does not (if you still get a popup saying copy failed), please click the "Contact" button and let me know, since that shouldn't be happening.`],
     ["v2.5", `Features:
 - Added a "Contact" overlay which has a link to the discord server I created for this tool, along with a link for creating an issue on GitHub
 
