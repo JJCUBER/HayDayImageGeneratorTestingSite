@@ -1421,6 +1421,7 @@ function addAbbreviationMappingTableRow(abbreviation, abbreviationExpanded)
     const abbreviationExpandedInput = document.createElement("input");
     const abbreviationExpandedInputSelector = $(abbreviationExpandedInput);
     abbreviationExpandedInputSelector.on("change", handleAbbreviationChange);
+    abbreviationExpandedInput.type = "text";
     abbreviationExpandedInput.value = abbreviationExpanded;
     // abbreviationExpandedInput.dataset.previousValue = abbreviationExpanded;
 
