@@ -120,7 +120,11 @@ td.selected:hover
     margin-bottom: 0px; /* this makes the screenshotRegion div wrap more tightly around this */
 
     /* hopefully fixes android's issue when generating image */
-    width: 100%;
+    /* didn't work */
+    /* width: 100%; */
+
+    /* I think this will fix it; this makes it so that text never wraps (other than where the <br>'s are put, which come from the multiline input), and it preserves consecutive spaces instead of collapsing them into 1 */
+    white-space: pre;
 }
 
 #bottomText:hover
