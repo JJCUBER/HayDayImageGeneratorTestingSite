@@ -118,6 +118,9 @@ td.selected:hover
 
     margin-top: 10px;
     margin-bottom: 0px; /* this makes the screenshotRegion div wrap more tightly around this */
+
+    /* hopefully fixes android's issue when generating image */
+    width: 100%;
 }
 
 #bottomText:hover
