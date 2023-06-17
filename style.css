@@ -275,8 +275,8 @@ td.selected:hover
     transform: translate(-50.00005%, -50%); /* the ever-so-slight offset is done since the left side of the outline of the textboxes gets weird (maybe that's only for my computer at 100%, I don't know.) */
 
     min-width: 20%;
-    max-width: 80%;
-    max-height: 80%;
+    max-width: 90%;
+    max-height: 90%;
     overflow-y: auto;
 
     background-color: #fffaca;
@@ -488,6 +488,7 @@ td.selected:hover
 /* Want this overlay to take up most of the screen horizontally (allowing the image to be more visible) */
 #failedCopyOverlay .overlayBox
 {
+    /* TODO -- since I made the max width/height for overlays 90%, should I change this to 90% as well? */
     width: 80%;
 }
 
@@ -496,5 +497,11 @@ td.selected:hover
 #failedCopyOverlayImageHolder
 {
     max-width: 100%;
+}
+
+/* maintain reasonable width of contact overlay even on mobile */
+#contactOverlay .overlayInner
+{
+    min-width: 12em;
 }
 

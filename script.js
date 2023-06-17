@@ -1421,6 +1421,7 @@ function addAbbreviationMappingTableRow(abbreviation, abbreviationExpanded)
     const abbreviationInputSelector = $(abbreviationInput);
     abbreviationInputSelector.on("change", handleAbbreviationChange);
     abbreviationInput.type = "text";
+    abbreviationInput.style.maxWidth = "8em";
     abbreviationInput.value = abbreviation;
     abbreviationInput.dataset.previousValue = abbreviation;
 
@@ -1428,6 +1429,7 @@ function addAbbreviationMappingTableRow(abbreviation, abbreviationExpanded)
     const abbreviationExpandedInputSelector = $(abbreviationExpandedInput);
     abbreviationExpandedInputSelector.on("change", handleAbbreviationChange);
     abbreviationExpandedInput.type = "text";
+    abbreviationExpandedInput.style.maxWidth = "8em";
     abbreviationExpandedInput.value = abbreviationExpanded;
     // abbreviationExpandedInput.dataset.previousValue = abbreviationExpanded;
 
