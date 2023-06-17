@@ -119,11 +119,6 @@ $(document).ready(() =>
     fuzzyMatchesHolder = $("#fuzzyMatchesHolder");
 
 
-
-    // prevents zooming in on input/textarea focus in iOS
-    if(isRunningIOS())
-        $("input, textarea").css("font-size", "16px");
-
     itemsPerRowSlider.on("input",
         (event) =>
         {
@@ -242,6 +237,7 @@ $(document).ready(() =>
     bottomText.on("click", () =>
     {
         settingsOverlay.showButton.trigger("click");
+        bottomTextSettingInput[0].scrollIntoView(false); // ensures that the textarea is visible/on screen (and puts it at the bottom so that it won't overlap with the x/close button)
         // TODO -- maybe this should be .focus() instead?
         bottomTextSettingInput.trigger("select");
     });
@@ -528,6 +524,13 @@ $(document).ready(() =>
     {
         preparedItemNames = prepared;
     });
+
+
+
+    // prevents zooming in on input/textarea focus in iOS
+    // TODO -- maybe make this some class and/or css media query-related thing?
+    if(isRunningIOS())
+        $("input, textarea").css("font-size", "16px");
 });
 
 
