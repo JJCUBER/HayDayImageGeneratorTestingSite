@@ -1536,7 +1536,8 @@ function loadAllFromLocalStorage()
     const sBottomText = localStorage.getItem("bottomText");
     bottomText[0].innerText = sBottomText ?? "Partials Accepted"; // just like the abbreviations, I give a "reasonable" default
 
-    const sItemsPerRow = localStorage.getItem("itemsPerRow") ?? 8; // default 8
+    // clientWidth found from https://stackoverflow.com/questions/1248081/how-to-get-the-browser-viewport-dimensions
+    const sItemsPerRow = localStorage.getItem("itemsPerRow") ?? Math.min(Math.floor(document.documentElement.clientWidth / 110), 8); // default up to 8 (however much fits; the exact calculation for the width a cell takes up is 8 + ct*100 + (ct-1)*10  AKA  110*ct - 2, but I rounded it slightly)
     itemsPerRowSlider.val(sItemsPerRow);
     itemsPerRowLabel.text(sItemsPerRow);
     itemsPerRow = sItemsPerRow;
