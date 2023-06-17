@@ -119,6 +119,11 @@ $(document).ready(() =>
     fuzzyMatchesHolder = $("#fuzzyMatchesHolder");
 
 
+
+    // prevents zooming in on input/textarea focus in iOS
+    if(isRunningIOS())
+        $("input, textarea").css("font-size", "16px");
+
     itemsPerRowSlider.on("input",
         (event) =>
         {
@@ -237,6 +242,7 @@ $(document).ready(() =>
     bottomText.on("click", () =>
     {
         settingsOverlay.showButton.trigger("click");
+        // TODO -- maybe this should be .focus() instead?
         bottomTextSettingInput.trigger("select");
     });
 
@@ -522,19 +528,6 @@ $(document).ready(() =>
     {
         preparedItemNames = prepared;
     });
-
-
-
-
-
-    // $('input, select, textarea').on('focus blur', function(event) {
-    // $('meta[name=viewport]').attr('content', 'width=device-width,initial-scale=1,maximum-scale=' + (event.type == 'blur' ? 10 : 1));
-  // });
-
-    if(isRunningIOS())
-    {
-        $("input, textarea").css("font-size", "16px");
-    }
 });
 
 
@@ -1371,7 +1364,7 @@ function updateFuzzyMatches()
             // TODO -- I need to standardise all of my arrow functions; particularly, I need to decide whether to always include the () even for single parameter, and I need to determine whether it is a good idea to have arrow functions like this that are a single line (without {}) which calls a function (I don't know how "proper" this is, and it could easily lead to accidentally forgetting the () =>, causing it to misbehave)
             // TODO -- should I keep the matches empty after the user selects one (until they start typing again)?
             if(!customParams || !customParams.usedKeyboard) // don't want to do this if the user selected a match using the keyboard via 1-9,0
-                $(document).one("mouseup", () => itemNameInput.trigger("select"));
+                $(document).one("mouseup", () => itemNameInput.trigger("focus"));
         });
 
         const p = document.createElement("p");
