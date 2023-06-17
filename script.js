@@ -522,6 +522,14 @@ $(document).ready(() =>
     {
         preparedItemNames = prepared;
     });
+
+
+
+
+
+    $('input, select, textarea').on('focus blur', function(event) {
+    $('meta[name=viewport]').attr('content', 'width=device-width,initial-scale=1,maximum-scale=' + (event.type == 'blur' ? 10 : 1));
+  });
 });
 
 
@@ -1789,6 +1797,7 @@ function setUpChangelog()
     changelogOverlay.inner.append(changes.flatMap(elem => [elem, document.createElement("hr")]).slice(0, -1));
 }
 
+// TODO -- I might want to put all of the local storage-related calls in wrapper functions in Persist.js
 function handleVersionChange()
 {
     const latestVersion = changelog.keys().next().value;
