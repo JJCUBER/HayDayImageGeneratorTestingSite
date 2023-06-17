@@ -237,7 +237,8 @@ $(document).ready(() =>
     bottomText.on("click", () =>
     {
         settingsOverlay.showButton.trigger("click");
-        bottomTextSettingInput[0].scrollIntoView(false); // ensures that the textarea is visible/on screen (and puts it at the bottom so that it won't overlap with the x/close button)
+        // bottomTextSettingInput[0].scrollIntoView(false); // ensures that the textarea is visible/on screen (and puts it at the bottom so that it won't overlap with the x/close button)
+        bottomTextSettingInput[0].scrollIntoView(); // ensures that the textarea is visible/on screen (and puts it at the top; for some reason, iOS doesn't do the normal behavior of shifting the page up when showing the keyboard after doing it this way)
         // TODO -- maybe this should be .focus() instead?
         bottomTextSettingInput.trigger("select");
     });
