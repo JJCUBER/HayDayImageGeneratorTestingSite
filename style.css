@@ -13,6 +13,10 @@ button
     background-color: rgba(240, 240, 240); /* found this value from https://github.com/chromium/chromium/blob/6272343bc05f9498f366682399eb0aa21f76ff47/content/child/webthemeengine_impl_default_browsertest.cc based on the names of colors in the devtools inspector */
 
     transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+
+    /* This combined with the change to divs separating groups of buttons maintains the 10px gap, while also having a slightly less 8px gap between wrapped buttons (buttons that wrap to the next line); before, there would be no gap between these vertically, making it look bad */
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 button:disabled
