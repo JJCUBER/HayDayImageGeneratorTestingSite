@@ -369,7 +369,7 @@ td.selected:hover
     /* somehow fixes the gap issues */
     /* display: flex; */
     /* flex-direction: column; */
-    /* height: 100%; */
+    height: 100%;
 }
 
 /* animates when the list of matches goes from > non-empty */
