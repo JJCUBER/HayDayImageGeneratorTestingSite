@@ -390,6 +390,7 @@ td.selected:hover
     position: relative; /* needed so that absolute position of p children works properly */
     /* margin: 0; */
     /* padding: 0; */
+    display-style: block;
 }
 
 #fuzzyMatchesHolder p
