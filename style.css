@@ -367,9 +367,9 @@ td.selected:hover
     padding: 0;
 
     /* somehow fixes the gap issues */
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    /* display: flex; */
+    /* flex-direction: column; */
+    /* height: 100%; */
 }
 
 /* animates when the list of matches goes from > non-empty */
@@ -390,14 +390,15 @@ td.selected:hover
     color: white;
 
     margin: 0;
-    padding: 0;
+    /* padding: 0; */
+    padding-left: 1em; /* prevent overlap with 1-9,0 number label */
 }
 
 #fuzzyMatchesHolder div
 {
     position: relative; /* needed so that absolute position of p children works properly */
-    margin: 0;
-    padding: 0;
+    /* margin: 0; */
+    /* padding: 0; */
     /* display-style: block; */
 }
 
