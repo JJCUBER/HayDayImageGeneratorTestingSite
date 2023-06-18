@@ -366,9 +366,9 @@ td.selected:hover
     margin: 0;
     padding: 0;
 
-    /* somehow fixes the gap issues */
-    /* display: flex; */
-    /* flex-direction: column; */
+    /* fixes the gap issues */
+    display: flex;
+    flex-direction: column;
     height: 100%;
 }
 
