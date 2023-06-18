@@ -373,6 +373,7 @@ td.selected:hover
 #fuzzyMatchesHolder button
 {
     width: 100%;
+    height:100%;
     background-color: grey;
     /* border-color: grey; */
     border-style: solid;
