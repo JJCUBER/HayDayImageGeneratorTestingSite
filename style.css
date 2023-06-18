@@ -362,6 +362,14 @@ td.selected:hover
     position: absolute;
     width: 100%;
     z-index: 1;
+
+    margin: 0;
+    padding: 0;
+
+    /* somehow fixes the gap issues */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 /* animates when the list of matches goes from > non-empty */
@@ -373,7 +381,7 @@ td.selected:hover
 #fuzzyMatchesHolder button
 {
     width: 100%;
-    height:100%;
+    height: 100%;
     background-color: grey;
     /* border-color: grey; */
     border-style: solid;
@@ -381,17 +389,16 @@ td.selected:hover
     border-color: dimgrey;
     color: white;
 
-    /* TEST */
-    /* DIDNT WORK */
     margin: 0;
+    padding: 0;
 }
 
 #fuzzyMatchesHolder div
 {
     position: relative; /* needed so that absolute position of p children works properly */
-    /* margin: 0; */
-    /* padding: 0; */
-    display-style: block;
+    margin: 0;
+    padding: 0;
+    /* display-style: block; */
 }
 
 #fuzzyMatchesHolder p
