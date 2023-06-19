@@ -125,6 +125,8 @@ $(document).ready(() =>
             itemsPerRow = event.target.value;
             itemsPerRowLabel.text(itemsPerRow);
             updateItemLayout();
+
+            rescaleScreenshotRegion();
         }
     );
 
@@ -542,7 +544,19 @@ $(document).ready(() =>
     // TODO -- maybe make this some class and/or css media query-related thing?
     if(isRunningIOS())
         $("input, textarea").css("font-size", "16px");
+
+
+    $(window).on('resize', rescaleScreenshotRegion);
+    rescaleScreenshotRegion();
 });
+
+
+function rescaleScreenshotRegion()
+{
+    // screenshotRegion[0].style.transform = `scale(${0.9 * document.defaultView.innerWidth / screenshotRegion.width()})`;
+    const scaleFactor = Math.min(1, 0.95 * document.defaultView.innerWidth / (itemsPerRow * 110));
+    screenshotRegion[0].style.transform = `scale(${scaleFactor})`;
+};
 
 
 /* -------- scripts/Overlay.js -------- */
@@ -1027,7 +1041,7 @@ function copyImageToClipboard()
         screenshotRegion.append(createdBy);
 
     copyImageLoadingWheel.prop("hidden", false);
-
+    screenshotRegion[0].style.transform = "";
 
     let screenshotBlob;
     let clipboardWrittenPromise;
@@ -1089,6 +1103,7 @@ function copyImageToClipboard()
             isActivelyCopyingImage = false;
 
             copyImageLoadingWheel.prop("hidden", true);
+            rescaleScreenshotRegion();
         });
 }
 
@@ -1320,7 +1335,7 @@ async function prepareAllItemNames()
 // gotten from https://hayday.fandom.com/wiki/Supplies (if I got the images for these the same way as I did for everything else, there would be a ton of building images listed as items)
 const suppliesNames = ["Axe", "Dynamite", "Saw", "Shovel", "TNT Barrel", "Pickaxe", "Bolt", "Brick", "Duct Tape", "Hammer", "Hand Drill", "Nail", "Paint Bucket", "Plank", "Screw", "Stone Block", "Tar Bucket", "Wood Panel", "Land Deed", "Mallet", "Map Piece", "Marker Stake"];
 // extraneous "item"/image names (due to how the item names are fetched) that shouldn't be included; "Honey Mask" is a duplicate of "Honey Face Mask"
-const nameBlacklist = new Set(["Chicken Feed", "Cow Feed", "Pig Feed", "Sheep Feed", "Red Lure", "Green Lure", "Blue Lure", "Purple Lure", "Gold Lure", "Fishing Net", "Mystery Net", "Goat Feed", "Lobster Trap", "Duck Trap", "Honey Mask", "Field", "Apple Tree", "Shop Icon", "Coins", "Experience"]);
+const nameBlacklist = new Set(["Chicken Feed", "Cow Feed", "Pig Feed", "Sheep Feed", "Red Lure", "Green Lure", "Blue Lure", "Purple Lure", "Gold Lure", "Fishing Net", "Mystery Net", "Goat Feed", "Lobster Trap", "Duck Trap", "Honey Mask", "Field", "Apple Tree", "Shop Icon", "Coins", "Experience", "Caffè Latte", "Caffè Mocha"]);
 async function getAllItemNames()
 {
     const fetchPortion = (pageName) =>
@@ -1597,6 +1612,10 @@ function saveItemsToLocalStorage()
 
 /* -------- scripts/Changelog.js -------- */
 const changelog = new Map([
+    ["v2.8.1", `Bug Fixes:
+- Made delete button do nothing when name input is empty (previously, it would set the quantity to 0; this isn't exactly a bug)
+- finally fixed the weird gap between fuzzy matches on mobile
+- fixed item cells getting warped when on a small screen with too many columns specified (images still maintain their aspect ratio, but they no longer scale down way below 100x100)`],
     ["v2.8", `Features:
 - Added a delete button (outside of price calculation/selection mode; I added it since people might find it more intuitive when newer to the tool)
 - Disabled native autocomplete that could sometimes show up over top my own fuzzy autocomplete
