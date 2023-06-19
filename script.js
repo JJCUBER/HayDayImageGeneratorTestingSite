@@ -121,7 +121,7 @@ $(document).ready(() =>
 
     itemsPerRowSlider.on("input", (event) =>
     {
-        itemsPerRow = parseInt(event.target.value);
+        itemsPerRow = parseInt(event.target.value); // must convert to integer/number (since I do + calculations with it and don't want it to concat like a string)
         itemsPerRowLabel.text(itemsPerRow);
         updateItemLayout();
 
@@ -544,17 +544,10 @@ $(document).ready(() =>
         $("input, textarea").css("font-size", "16px");
 
 
-    $(window).on('resize', rescaleScreenshotRegion);
+    // rescale screenshot region whenever window/page is resized (also invokes it for the first time immediately to ensure it starts scaled properly)
+    $(window).on("resize", rescaleScreenshotRegion);
     rescaleScreenshotRegion();
 });
-
-
-function rescaleScreenshotRegion()
-{
-    // screenshotRegion[0].style.transform = `scale(${0.9 * document.defaultView.innerWidth / screenshotRegion.width()})`;
-    const scaleFactor = Math.min(1, document.documentElement.clientWidth / ((itemsPerRow + 1) * 110));
-    screenshotRegion[0].style.transform = `scale(${scaleFactor})`;
-};
 
 
 /* -------- scripts/Overlay.js -------- */
@@ -1039,7 +1032,7 @@ function copyImageToClipboard()
         screenshotRegion.append(createdBy);
 
     copyImageLoadingWheel.prop("hidden", false);
-    screenshotRegion[0].style.transform = "";
+    screenshotRegion[0].style.transform = ""; // temporarily remove screenshot region scaling so that image isn't messed up
 
     let screenshotBlob;
     let clipboardWrittenPromise;
@@ -1101,7 +1094,7 @@ function copyImageToClipboard()
             isActivelyCopyingImage = false;
 
             copyImageLoadingWheel.prop("hidden", true);
-            rescaleScreenshotRegion();
+            rescaleScreenshotRegion(); // restore screenshot region's scaling
         });
 }
 
@@ -1433,6 +1426,16 @@ function createFailedCopyNotification()
 }
 
 
+// TODO -- I might want to eventually be rescaling the cells, though that would be a lot of work to modify all the css
+function rescaleScreenshotRegion()
+{
+    // screenshotRegion[0].style.transform = `scale(${0.9 * document.defaultView.innerWidth / screenshotRegion.width()})`;
+    // const scaleFactor = Math.min(1, 0.95 * document.defaultView.innerWidth / (itemsPerRow * 110));
+    const scaleFactor = Math.min(1, document.documentElement.clientWidth / ((itemsPerRow + 1) * 110));
+    screenshotRegion[0].style.transform = `scale(${scaleFactor})`;
+}
+
+
 /* -------- scripts/Settings.js -------- */
 function setUpAbbreviationMappingTable()
 {
@@ -1574,9 +1577,9 @@ function loadAllFromLocalStorage()
     const sItemsPerRow = localStorage.getItem("itemsPerRow") ?? Math.min(Math.floor(document.documentElement.clientWidth / 110), 8); // default up to 8 (however much fits; the exact calculation for the width a cell takes up is 8 + ct*100 + (ct-1)*10  AKA  110*ct - 2, but I rounded it slightly)
     itemsPerRowSlider.val(sItemsPerRow);
     itemsPerRowLabel.text(sItemsPerRow);
-    itemsPerRow = parseInt(sItemsPerRow);
+    itemsPerRow = parseInt(sItemsPerRow); // must "type cast" since localstorage doesn't retain type
 
-    textListSeparatorSelectedRadio = localStorage.getItem("textListSeparatorSelectedRadio") ?? 0;
+    textListSeparatorSelectedRadio = parseInt(localStorage.getItem("textListSeparatorSelectedRadio") ?? 0); // don't really need to do this, but it would be best to treat it as an integer/number
     const sTextListCustomSeparator = localStorage.getItem("textListCustomSeparator") ?? "";
     textListSeparatorCustomRadio.val(sTextListCustomSeparator);
     textListCustomSeparatorInput.val(sTextListCustomSeparator);
@@ -1595,7 +1598,7 @@ function saveAllToLocalStorage()
     localStorage.setItem("abbreviationMapping", JSON.stringify([...abbreviationMapping]));
     localStorage.setItem("bottomText", bottomText[0].innerText); // must use innerText for newlines to be handled properly
     // localStorage.setItem("bottomText", bottomTextSettingInput.val()); // can just use the setting input's value instead, though maybe I should keep it consistent with the loadAll, due to the way I load it into the bottom text then into the setting
-    localStorage.setItem("itemsPerRow", parseInt(itemsPerRowSlider.val()));
+    localStorage.setItem("itemsPerRow", itemsPerRow);
     localStorage.setItem("textListSeparatorSelectedRadio", textListSeparatorSelectedRadio);
     localStorage.setItem("textListCustomSeparator", textListCustomSeparatorInput.val());
     localStorage.setItem("textListFormat", textListFormatInput.val());
