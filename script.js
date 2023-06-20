@@ -243,6 +243,9 @@ $(document).ready(() =>
         bottomText[0].innerText = event.target.value;
 
         saveAllToLocalStorage();
+
+        // I only do this on change and not on input because I fear that it would cause too much lag/input delay from processing this
+        rescaleScreenshotRegion();
     });
     bottomText.on("click", () =>
     {
@@ -1007,6 +1010,9 @@ function updateItemLayout()
 
     if(shouldShowSelection)
         updateTotalPrice();
+
+    // I don't want to call this every time, since I feel like it slows down everything (I instead only call it when relevant things resize [items per row count, window size, bottom text])
+    // rescaleScreenshotRegion();
 }
 
 function formatItemPriceLabel(priceOrMultiplier)
@@ -1429,9 +1435,11 @@ function createFailedCopyNotification()
 // TODO -- I might want to eventually be rescaling the cells, though that would be a lot of work to modify all the css
 function rescaleScreenshotRegion()
 {
-    // screenshotRegion[0].style.transform = `scale(${0.9 * document.defaultView.innerWidth / screenshotRegion.width()})`;
-    // const scaleFactor = Math.min(1, 0.95 * document.defaultView.innerWidth / (itemsPerRow * 110));
-    const scaleFactor = Math.min(1, document.documentElement.clientWidth / ((itemsPerRow + 1) * 110));
+    // I take the min of these to ensure that everything always stays on screen (it takes into account both a longer bottom text and what the width would be if all items were in the table)
+    const heuristicFactor = document.documentElement.clientWidth / ((itemsPerRow + 1) * 110); // estimated width of table with all items in row filled in
+    const actualFactor = 0.9 * document.documentElement.clientWidth / screenshotRegion.width(); // actual calculated width of table (including bottom text)
+
+    const scaleFactor = Math.min(1, heuristicFactor, actualFactor); // 1 is included in the list of mins because I don't want to ever scale up, only down (if needed)
     screenshotRegion[0].style.transform = `scale(${scaleFactor})`;
 }
 
