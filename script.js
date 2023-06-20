@@ -67,6 +67,7 @@ let abbreviationMapping = new Map([
     ["rcoal", "refined coal"],
     ["gcheese", "goat cheese"]
 ]);
+let isActivelyCopyingImage = false;
 
 
 /* -------- scripts/Init.js -------- */
@@ -592,6 +593,11 @@ function handleAddingItem(e, usedSubmitButton = false)
         itemNameInput.removeClass("invalid");
 
 
+    // Don't want to accept changes while trying to copy the image
+    // TODO -- I don't handle actively copying image yet for anything related to price calculation mode; maybe I should do that?
+    if(isActivelyCopyingImage)
+        return;
+
     // TODO -- might want to be using e.key instead
     if(!usedSubmitButton && e.code !== "Enter")
         return;
@@ -1023,7 +1029,6 @@ function formatItemPriceLabel(priceOrMultiplier)
 }
 
 
-let isActivelyCopyingImage = false;
 function copyImageToClipboard()
 {
     if(isActivelyCopyingImage)
@@ -1037,8 +1042,9 @@ function copyImageToClipboard()
     if(!$(".watermark").length) // only append if the watermark always visible on screen didn't get removed
         screenshotRegion.append(createdBy);
 
-    copyImageLoadingWheel.prop("hidden", false);
+    copyImageLoadingWheel.prop("hidden", false); // show loading wheel
     screenshotRegion[0].style.transform = ""; // temporarily remove screenshot region scaling so that image isn't messed up
+    itemsPerRowSlider.prop("disabled", true); // temporarily disable items per row slider
 
     let screenshotBlob;
     let clipboardWrittenPromise;
@@ -1101,6 +1107,7 @@ function copyImageToClipboard()
 
             copyImageLoadingWheel.prop("hidden", true);
             rescaleScreenshotRegion(); // restore screenshot region's scaling
+            itemsPerRowSlider.prop("disabled", false);
         });
 }
 
@@ -1435,6 +1442,10 @@ function createFailedCopyNotification()
 // TODO -- I might want to eventually be rescaling the cells, though that would be a lot of work to modify all the css
 function rescaleScreenshotRegion()
 {
+    // If the user starts scrolling, zooming in, etc, don't want to rescale the screenshot region (I noticed this happening if a user on iOS starts scrolling in such a way where the address bar grows in size [triggering window resize])
+    if(isActivelyCopyingImage)
+        return;
+
     // I take the min of these to ensure that everything always stays on screen (it takes into account both a longer bottom text and what the width would be if all items were in the table)
     const heuristicFactor = document.documentElement.clientWidth / ((itemsPerRow + 1) * 110); // estimated width of table with all items in row filled in
     const actualFactor = 0.9 * document.documentElement.clientWidth / screenshotRegion.width(); // actual calculated width of table (including bottom text)
