@@ -29,8 +29,8 @@ let itemsPerRow = 8;
 let textListSeparatorSelectedRadio = 0;
 
 let itemsPerRowSlider, itemsPerRowLabel, itemNameInput, itemQuantityInput, itemPriceOrMultiplierInput, itemTable;
-let bottomText, screenshotRegion;
-let settingsOverlay, abbreviationMappingTable, bottomTextSettingInput, textListSeparatorRadios, textListCustomSeparatorInput, textListSeparatorCustomRadio, textListFormatInput, priceCalculationItemInput;
+let bottomText, screenshotRegion, screenshotPriceHolder;
+let settingsOverlay, abbreviationMappingTable, bottomTextSettingInput, textListSeparatorRadios, textListCustomSeparatorInput, textListSeparatorCustomRadio, textListFormatInput, priceCalculationItemInput, showPriceInScreenshotCheckBox;
 let priceCalculationModeStateSpan;
 let disableInPriceCalculationModeElems, disableOutsidePriceCalculationModeElems;
 let equationVisibilityStateSpan, unselectedItemsVisibilityStateSpan;
@@ -82,6 +82,7 @@ $(document).ready(() =>
 
     bottomText = $("#bottomText");
     screenshotRegion = $("#screenshotRegion");
+    screenshotPriceHolder = $("#screenshotPriceHolder");
 
     settingsOverlay = new Overlay("settingsOverlay", "showButton");
 
@@ -92,6 +93,7 @@ $(document).ready(() =>
     textListSeparatorCustomRadio = $("#textListSeparatorCustomRadio");
     textListFormatInput = $("#textListFormatInput");
     priceCalculationItemInput = $("#priceCalculationItemInput");
+    showPriceInScreenshotCheckBox = $("#showPriceInScreenshotCheckBox");
 
     priceCalculationModeStateSpan = $("#priceCalculationModeStateSpan");
 
@@ -187,14 +189,15 @@ $(document).ready(() =>
     {
         settingsOverlay.overlay.prop("hidden", false);
         // disables scrolling the main page and removes the scrollbar from the side while the settings button is focused ( https://stackoverflow.com/questions/9280258/prevent-body-scrolling-but-allow-overlay-scrolling )
-        $("body").css("overflow", "hidden");
+        // have to set both due to how I'm hiding overflow-x via css (this might not actually be required; TODO -- see if the css file actually needs html and body to both have overflow set; it seems like both should be set to prevent running into issues though: https://stackoverflow.com/questions/41506456/why-body-overflow-not-working )
+        $("html, body").css("overflow-y", "hidden");
         // prevents the screenshot region from shifting over to the right due to the scrollbar now missing ( https://stackoverflow.com/questions/1417934/how-to-prevent-scrollbar-from-repositioning-web-page and https://css-tricks.com/elegant-fix-jumping-scrollbar-issue/ and https://aykevl.nl/2014/09/fix-jumping-scrollbar )
         screenshotRegion.css("margin-right", "calc(100vw - 100%)");
     });
     settingsOverlay.hideButton.on("click", () =>
     {
         settingsOverlay.overlay.prop("hidden", true);
-        $("body").css("overflow", "visible");
+        $("html, body").css("overflow-y", "visible");
         screenshotRegion.css("margin-right", "unset");
     });
     settingsOverlay.background.on("click", () =>
@@ -314,11 +317,24 @@ $(document).ready(() =>
 
         priceCalculationItem = new Item(itemNameFormatted, undefined, itemUrl, undefined, itemMaxPrice);
 
-        updateTotalPrice();
+        // TODO -- it might be better to just always make sure price gets immediately updated tbh (although, enabling price calc mode or showing of the price in screenshot will run update total price themselves)
+        if(getIsInPriceCalculationMode() || getIsPriceShownInScreenshot())
+            updateTotalPrice();
         saveAllToLocalStorage();
     });
     // want to make it fire immediately the first time; I couldn't do this inside the load all function since this must be set after the load all and after the coin image url is fetched
     priceCalculationItemInput.trigger("change");
+
+
+    showPriceInScreenshotCheckBox.on("click", () =>
+    {
+        let wasShowing = getIsPriceShownInScreenshot();
+        screenshotPriceHolder.prop("hidden", wasShowing);
+
+        if(!wasShowing)
+            updateTotalPrice();
+        saveAllToLocalStorage();
+    });
 
     $("#copyAsTextListButton").on("click", copyAsTextListToClipboard);
 
@@ -482,14 +498,14 @@ $(document).ready(() =>
     {
         changelogOverlay.overlay.prop("hidden", false);
         // disables scrolling the main page and removes the scrollbar from the side while the settings button is focused ( https://stackoverflow.com/questions/9280258/prevent-body-scrolling-but-allow-overlay-scrolling )
-        $("body").css("overflow", "hidden");
+        $("html, body").css("overflow-y", "hidden");
         // prevents the screenshot region from shifting over to the right due to the scrollbar now missing ( https://stackoverflow.com/questions/1417934/how-to-prevent-scrollbar-from-repositioning-web-page and https://css-tricks.com/elegant-fix-jumping-scrollbar-issue/ and https://aykevl.nl/2014/09/fix-jumping-scrollbar )
         screenshotRegion.css("margin-right", "calc(100vw - 100%)");
     });
     changelogOverlay.hideButton.on("click", () =>
     {
         changelogOverlay.overlay.prop("hidden", true);
-        $("body").css("overflow", "visible");
+        $("html, body").css("overflow-y", "visible");
         screenshotRegion.css("margin-right", "unset");
     });
     changelogOverlay.background.on("click", () =>
@@ -504,7 +520,7 @@ $(document).ready(() =>
     failedCopyOverlay.hideButton.on("click", () =>
     {
         failedCopyOverlay.overlay.prop("hidden", true);
-        $("body").css("overflow", "visible");
+        $("html, body").css("overflow-y", "visible");
         screenshotRegion.css("margin-right", "unset");
     });
     failedCopyOverlay.background.on("click", () =>
@@ -518,14 +534,14 @@ $(document).ready(() =>
     {
         contactOverlay.overlay.prop("hidden", false);
         // disables scrolling the main page and removes the scrollbar from the side while the settings button is focused ( https://stackoverflow.com/questions/9280258/prevent-body-scrolling-but-allow-overlay-scrolling )
-        $("body").css("overflow", "hidden");
+        $("html, body").css("overflow-y", "hidden");
         // prevents the screenshot region from shifting over to the right due to the scrollbar now missing ( https://stackoverflow.com/questions/1417934/how-to-prevent-scrollbar-from-repositioning-web-page and https://css-tricks.com/elegant-fix-jumping-scrollbar-issue/ and https://aykevl.nl/2014/09/fix-jumping-scrollbar )
         screenshotRegion.css("margin-right", "calc(100vw - 100%)");
     });
     contactOverlay.hideButton.on("click", () =>
     {
         contactOverlay.overlay.prop("hidden", true);
-        $("body").css("overflow", "visible");
+        $("html, body").css("overflow-y", "visible");
         screenshotRegion.css("margin-right", "unset");
     });
     contactOverlay.background.on("click", () =>
@@ -1014,7 +1030,7 @@ function updateItemLayout()
         itemTable.append(tableRow);
     }
 
-    if(shouldShowSelection)
+    if(shouldShowSelection || getIsPriceShownInScreenshot())
         updateTotalPrice();
 
     // I don't want to call this every time, since I feel like it slows down everything (I instead only call it when relevant things resize [items per row count, window size, bottom text])
@@ -1072,6 +1088,7 @@ function copyImageToClipboard()
     }
     else // not iOS
     {
+        // htmlToImage.toBlob(..., {canvasWidth: ..., canvasHeight: ..., width: ..., height: ...}) // there are options for canvas Width/Height, along with node's Width/Height, but they aren't really what I'm looking for (zooming out far on the page itself still modifies the scaling of everything)
         clipboardWrittenPromise = htmlToImage.toBlob(screenshotRegion[0])
             .then(blob => new ClipboardItem({"image/png": screenshotBlob = blob})) // also stores the blob in case the error is caught later
             .then(clipboardItem => navigator.clipboard.write([clipboardItem]));
@@ -1095,7 +1112,7 @@ function copyImageToClipboard()
 
                 failedCopyOverlay.overlay.prop("hidden", false);
                 // disables scrolling the main page and removes the scrollbar from the side while the settings button is focused ( https://stackoverflow.com/questions/9280258/prevent-body-scrolling-but-allow-overlay-scrolling )
-                $("body").css("overflow", "hidden");
+                $("html, body").css("overflow-y", "hidden");
                 // prevents the screenshot region from shifting over to the right due to the scrollbar now missing ( https://stackoverflow.com/questions/1417934/how-to-prevent-scrollbar-from-repositioning-web-page and https://css-tricks.com/elegant-fix-jumping-scrollbar-issue/ and https://aykevl.nl/2014/09/fix-jumping-scrollbar )
                 screenshotRegion.css("margin-right", "calc(100vw - 100%)");
             }
@@ -1191,7 +1208,8 @@ async function ensureItemsHaveMaxPriceSet()
         shouldSave = true;
 
         // updates the total price along the way if currently in price calculation mode (I'm doing this instead of only doing it once at the end so that the user can see the price updating as it gets loaded)
-        if(getIsInPriceCalculationMode())
+        // TODO -- I don't think I need || shouldShow... here currently, though I might want/need it if I allow for persistent selections at some point
+        if(getIsInPriceCalculationMode() || getIsPriceShownInScreenshot())
             updateTotalPrice();
     }
 
@@ -1221,6 +1239,7 @@ function calculateTotalSelectedPrice()
     let equations = [];
     // TODO -- I should instead filter this BEFORE sorting (doesn't change anything functionally, it's just more performant that way)
     // we go through it in quantity descending order to make the equation be in the same order as the items in the grid
+    // TODO -- now that this function gets called from updateItemLayout() whenever showing price in screenshot is enabled, I should probably be caching itemsSortedDescending
     const itemsSortedDescending = [...items.values()].sort((item1, item2) => item2.quantity - item1.quantity);
     let message, isError = false;
     for(let item of itemsSortedDescending)
@@ -1267,7 +1286,7 @@ function calculateTotalSelectedPrice()
     return total;
 }
 
-// it might be better to check whether in price calculation mode here instead of everywhere before calling this function, though that might be slower in scenarios where I have the state (of whether being in price calculation mode or not) cached.
+// TODO -- it might be better to check whether in price calculation mode here (and/or if price is shown in the screenshot) instead of everywhere before calling this function, though that might be slower in scenarios where I have the state (of whether being in price calculation mode or not) cached.
 function updateTotalPrice()
 {
     const totalPrice = calculateTotalSelectedPrice();
@@ -1280,13 +1299,27 @@ function updateTotalPrice()
     const totalPriceInItems = +(totalPrice / priceCalculationItem.maxPrice).toFixed(2); // the unary + converts it back to a number, removing trailing zeroes
     const totalPriceInItemsFormatted = totalPriceInItems.toLocaleString();
 
-    totalPriceHolder.html(`${totalPriceFormatted}<img src="${coinImageUrl}" style="width: 14px; height: 14px;"><span style="display: inline-block; width: 10px;"></span>${totalPriceInItems}<img src="${priceCalculationItem.url}" style="width: 14px; height: 14px;">`);
+    const selectedCount = getSelectedCount();
+
+    const totalPriceHTML = `${totalPriceFormatted}<img src="${coinImageUrl}" style="width: 14px; height: 14px;"><span style="display: inline-block; width: 10px;"></span>${totalPriceInItems}<img src="${priceCalculationItem.url}" style="width: 14px; height: 14px;"><span style="display: inline-block; width: 10px;"></span>(${selectedCount} items)`;
+
+    if(getIsInPriceCalculationMode())
+        totalPriceHolder.html(totalPriceHTML);
+
+    if(getIsPriceShownInScreenshot())
+        screenshotPriceHolder.html(totalPriceHTML);
 }
 
 
 function getIsInPriceCalculationMode()
 {
     return !totalPriceArea.is("[hidden]");
+}
+
+function getIsPriceShownInScreenshot()
+{
+    // TODO -- for this and other checkbox-related settings, should I be looking at the settings themselves for the state of things, or should I be looking at the elements that are set as visible, hidden, etc. like what I do right here?
+    return !screenshotPriceHolder.prop("hidden");
 }
 
 
@@ -1454,6 +1487,18 @@ function rescaleScreenshotRegion()
     screenshotRegion[0].style.transform = `scale(${scaleFactor})`;
 }
 
+function getSelectedCount()
+{
+    let count = 0;
+    for(let item of [...items.values()])
+    {
+        if(item.isSelected)
+            count += item.customQuantity ?? item.quantity;
+    }
+
+    return count;
+}
+
 
 /* -------- scripts/Settings.js -------- */
 function setUpAbbreviationMappingTable()
@@ -1608,6 +1653,12 @@ function loadAllFromLocalStorage()
 
     const sPriceCalculationItem = localStorage.getItem("priceCalculationItem") ?? "Diamond Ring"; // default to rings
     priceCalculationItemInput.val(sPriceCalculationItem);
+
+    // TODO -- finish up "Selections category and add it here; might want to combine thing right below this into this"
+
+    const sShowPriceInScreenshot = (localStorage.getItem("showPriceInScreenshot") ?? "true") === "true"; // default to true; localStorage only uses strings, so need to make sure to compare to "true" not true
+    showPriceInScreenshotCheckBox.prop("checked", sShowPriceInScreenshot);
+    screenshotPriceHolder.prop("hidden", !sShowPriceInScreenshot);
 }
 
 function saveAllToLocalStorage()
@@ -1622,6 +1673,10 @@ function saveAllToLocalStorage()
     localStorage.setItem("textListCustomSeparator", textListCustomSeparatorInput.val());
     localStorage.setItem("textListFormat", textListFormatInput.val());
     localStorage.setItem("priceCalculationItem", priceCalculationItemInput.val());
+
+    // TODO -- finish up "Selections category and add it here; might want to combine thing right below this into this"
+
+    localStorage.setItem("showPriceInScreenshot", showPriceInScreenshotCheckBox.prop("checked"));
 }
 
 function saveItemsToLocalStorage()
@@ -1632,6 +1687,31 @@ function saveItemsToLocalStorage()
 
 /* -------- scripts/Changelog.js -------- */
 const changelog = new Map([
+    ["v2.10", `Features:
+- Added setting to show selected price in the generated image (defaults to being enabled)
+
+Misc:
+- Minor code/performance improvements`],
+    ["v2.9.2", `Bug Fixes:
+- Fixed being able to scroll the page behind an overlay (this was a regression)`],
+    ["v2.9.1", `Features:
+- the total quantity of selected items is now shown when in price calculation mode
+
+UI Changes:
+- quantity and price labels now fade in/out
+
+Note:
+- Sorry for the lack of updates recently.  I have been quite busy IRL these past few weeks.  I still have plans to add tons of features over time, but development might be a bit slower than it used to be.  Regardless, feel free to join the discord (by clicking the "Contact" button) to suggest new features and/or to ask for help!
+- There is now a full text-based tutorial and a video tutorial of how to use this site (it is in the discord server, though I will eventually incorporate it into the site).`],
+    ["v2.9", `UI Changes:
+- The item grid/region now scales to fit on your screen/display without needing to scroll/zoom (this does not affect the generated image since the item grid's scale temporarily gets reset while generating the image).  It also takes into account the bottom text being wider than the item grid.
+
+Bug Fixes:
+- Preserved numerical types when loading from local storage (this didn't cause issues in any live version of the tool/site)
+- Disabled changing the number of items per row and adding/modifying/deleting items while the image is in the process of being generated
+
+Misc:
+- Removed duplicated item names with accented name variant (Caffè Latte and Caffè Mocha; the non-accented versions of the names still work, I just removed the accented variants)`],
     ["v2.8.1", `Bug Fixes:
 - Made delete button do nothing when name input is empty (previously, it would set the quantity to 0; this isn't exactly a bug)
 - finally fixed the weird gap between fuzzy matches on mobile
